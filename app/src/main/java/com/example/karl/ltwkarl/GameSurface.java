@@ -27,6 +27,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
 
+
+
     private GameThread gameThread;
 
     public GameSurface(Context context)  {
@@ -69,14 +71,18 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
+
+
         Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
-        chibiList.add(new ChibiCharacter(this, chibiBitmap1, 100, 50));
+        chibiList.add(new ChibiCharacter(this, chibiBitmap1, 0, 0));
 
-        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
-        chibiList.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
+//        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
+//        chibiList.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
+//
+//        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
+//        towersList.add(new Tower(this, blockBasic1, 50, 50));
 
-        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
-        towersList.add(new Tower(this, blockBasic1, 50, 50));
+
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -135,5 +141,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
         return false;
     }
+
 
 }

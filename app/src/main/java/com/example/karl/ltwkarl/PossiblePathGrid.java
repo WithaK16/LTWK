@@ -23,21 +23,18 @@ public class PossiblePathGrid {
     /** The actual data for our map */
     private int[][] data = new int[WIDTH][HEIGHT];
     // List of the possible path
-    private ArrayList<Point> listPossiblePath;
+    private ArrayList<Point> listPossiblePath = new ArrayList<Point>();
     /**
      * Create a new map with some default contents
      */
 
-    //Reference to the gameSurface
-    private GameSurface gameSurface;
 
-    public PossiblePathGrid(GameSurface gameSurface) {
+    public PossiblePathGrid() {
         // create some default map data - it would be way
         // cooler to load this from a file and maybe provide
         // a map editor of some sort, but since we're just doing
         // a simple tutorial here we'll manually fill the data
         // with a simple little map
-        this.gameSurface = gameSurface;
 
         // MAKE ALL CELL BLOCKED
         for (int y=0;y<HEIGHT;y++) {
@@ -62,24 +59,21 @@ public class PossiblePathGrid {
     }
 
     public void computeListPossiblePath() {
-        for (int y=0 ; y<HEIGHT; y++) {
-            for (int x=0; x<WIDTH; x++)
-            {
-                if (data[x][y] == CLEAR) {
-                    listPossiblePath.add(new Point(x, y));
-                }
-            }
-        }
+        listPossiblePath.add(new Point(0,0));
+        listPossiblePath.add(new Point(1,0));
+        listPossiblePath.add(new Point(1,1));
+        listPossiblePath.add(new Point(1,2));
+        listPossiblePath.add(new Point(2,2));
+        listPossiblePath.add(new Point(3,2));
+        listPossiblePath.add(new Point(3,1));
+        listPossiblePath.add(new Point(3,0));
+        listPossiblePath.add(new Point(4,0));
+        listPossiblePath.add(new Point(5,0));
     }
 
     public ArrayList<Point> getListPossiblePath() {
-        if (listPossiblePath != null) {
-            return listPossiblePath;
-        }
-        else {
             computeListPossiblePath();
             return listPossiblePath;
         }
-    }
 
 }

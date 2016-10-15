@@ -6,6 +6,11 @@ package com.example.karl.ltwkarl;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.ListIterator;
 
 public class ChibiCharacter extends GameObject {
 
@@ -27,24 +32,32 @@ public class ChibiCharacter extends GameObject {
     private Bitmap[] bottomToTops;
 
     // Velocity of game character (pixel/millisecond)
-    public static final float VELOCITY = 1f;
+    public static final float VELOCITY = 0.05f;
 
     private int movingVectorX = 0;
     private int movingVectorY = 0;
+
+    private int xGrid;
+    private int yGrid;
 
     private long lastDrawNanoTime =-1;
 
     private GameSurface gameSurface;
 
-    public ChibiCharacter(GameSurface gameSurface, Bitmap image, int x, int y) {
+
+    public ChibiCharacter(GameSurface gameSurface, Bitmap image,  int x, int y) {
         super(image, 4, 3, x, y);
 
         this.gameSurface= gameSurface;
+
+        this.xGrid = getXGrid(x);
+        this.yGrid = getYGrid(y);
 
         this.topToBottoms = new Bitmap[colCount]; // 3
         this.rightToLefts = new Bitmap[colCount]; // 3
         this.leftToRights = new Bitmap[colCount]; // 3
         this.bottomToTops = new Bitmap[colCount]; // 3
+
 
         for(int col = 0; col< this.colCount; col++ ) {
             this.topToBottoms[col] = this.createSubImageAt(ROW_TOP_TO_BOTTOM, col);
@@ -76,6 +89,7 @@ public class ChibiCharacter extends GameObject {
 
 
     public void update()  {
+
         this.colUsing++;
         if(colUsing >= this.colCount)  {
             this.colUsing =0;
@@ -90,9 +104,36 @@ public class ChibiCharacter extends GameObject {
         // Change nanoseconds to milliseconds (1 nanosecond = 1000000 milliseconds).
         int deltaTime = (int) ((now - lastDrawNanoTime)/ 1000000 );
 
+        xGrid = getXGrid(x);
+        yGrid = getYGrid(y);
+        Log.v(LOG_TAG, String.valueOf(xGrid));
+        Log.v(LOG_TAG, String.valueOf(yGrid));
+        Point pointGrid = new Point(xGrid, yGrid);
+
+        PossiblePathGrid possiblePathGrid = new PossiblePathGrid(); // TODO Change this as a reference
+
+        ArrayList<Point> listPossiblePath = possiblePathGrid.getListPossiblePath();
+        ListIterator listPossiblePathIterator = listPossiblePath.listIterator();
+
+        boolean found = false;
+        // TODO how to deal with a creature on a forbidden path?
+        while (listPossiblePathIterator.hasNext()) {
+            Point possiblePath = (Point)listPossiblePathIterator.next();
+            if (found == true)
+            {
+                int newMovingVectorX = possiblePath.x*32 - pointGrid.x*32;
+                int newMovingVectorY = possiblePath.y*32 - pointGrid.y*32;
+                setMovingVector(newMovingVectorX, newMovingVectorY);
+                break;
+            }
+            else if (pointGrid.equals(possiblePath)) {
+                found = true;
+            }
+        }
+
         // Distance moves
         float distance = VELOCITY * deltaTime;
-
+        //
         double movingVectorLength = Math.sqrt(movingVectorX * movingVectorX + movingVectorY * movingVectorY);
 
         // Calculate the new position of the game character.
@@ -147,5 +188,12 @@ public class ChibiCharacter extends GameObject {
     public void setMovingVector(int movingVectorX, int movingVectorY)  {
         this.movingVectorX= movingVectorX;
         this.movingVectorY = movingVectorY;
+    }
+
+    public int getXGrid(int x) {
+        return x / 32;  // TODO Don't let this hard coded value of 32 px for the grid
+    }
+    public int getYGrid(int y) {
+        return y / 32;  // TODO Don't let this hard coded value of 32 px for the grid
     }
 }
