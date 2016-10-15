@@ -11,9 +11,12 @@ import android.graphics.Point;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-public class ChibiCharacter extends GameObject {
+public class ChibiCharacter extends GameObject implements Mover {
 
     private static final String LOG_TAG = ChibiCharacter.class.getSimpleName();
+
+    /** The unit ID moving */
+    private int unitType;
 
     private static final int ROW_TOP_TO_BOTTOM = 0;
     private static final int ROW_RIGHT_TO_LEFT = 1;
@@ -44,8 +47,10 @@ public class ChibiCharacter extends GameObject {
     private GameSurface gameSurface;
 
 
-    public ChibiCharacter(GameSurface gameSurface, Bitmap image,  int x, int y) {
+    public ChibiCharacter(GameSurface gameSurface, Bitmap image, int unitType,  int x, int y) {
         super(image, 4, 3, x, y);
+
+        this.unitType = unitType;
 
         this.gameSurface= gameSurface;
 
@@ -84,6 +89,10 @@ public class ChibiCharacter extends GameObject {
     public Bitmap getCurrentMoveBitmap()  {
         Bitmap[] bitmaps = this.getMoveBitmaps();
         return bitmaps[this.colUsing];
+    }
+
+    public int getUnitType() {
+        return unitType;
     }
 
 

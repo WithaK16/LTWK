@@ -25,7 +25,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<ChibiCharacter> listChibis = new ArrayList<ChibiCharacter>();
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
-    private ArrayList<Point> listPossiblePath = new ArrayList<Point>();
+
+    /** The path finder we'll use to search our map */
+    private PathFinder finder;
+    /** The last path found for the current unit */
+    private ArrayList<Point> listPossiblePath = new ArrayList();
 
 
     private GameThread gameThread;
@@ -41,9 +45,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update()  {
-        // create a possible path grid object and get the list of possible path for the current "round"
-        PossiblePathGrid possiblePathGrid = new PossiblePathGrid(listTowers);
-        listPossiblePath = possiblePathGrid.getListPossiblePath();
+
 
         for (ChibiCharacter chibi : listChibis) {
             chibi.update();
@@ -75,17 +77,25 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
 
 
-
         Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
-        listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0));
+        listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
 
 //        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
 //        listChibis.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
 //
-//        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
-//        listTowers.add(new Tower(this, blockBasic1, 50, 50));
+        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
+        for (int i = 0; i<7; i++) {
+            listTowers.add(new Tower(this, blockBasic1, 2*GameMap.WIDTH_GRID, i*GameMap.HEIGHT_GRID));
+        }
 
-
+        // create a possible path grid object and get the list of possible path for the current "round"
+        GameMap gameMap = new GameMap(listTowers);
+        /** The path finder we'll use to search our map */
+        finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
+        listPossiblePath = finder.findPath(listChibis.get(0),
+                listChibis.get(0).getX(), listChibis.get(0).getY(),
+                25, 0)
+                .getPossiblePath();
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -145,7 +155,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         return false;
     }
 
-    public ArrayList<Point> getListPossiblePath() {
+    public ArrayList getListPossiblePath() {
         return this.listPossiblePath;
     }
 
