@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -21,12 +22,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String LOG_TAG = GameSurface.class.getSimpleName();
 
-    private ArrayList<ChibiCharacter> chibiList = new ArrayList<ChibiCharacter>();
-    private ArrayList<Explosion> explosionsList = new ArrayList<Explosion>();
-    private ArrayList<Tower> towersList = new ArrayList<Tower>();
-
-
-
+    private ArrayList<ChibiCharacter> listChibis = new ArrayList<ChibiCharacter>();
+    private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
+    private ArrayList<Tower> listTowers = new ArrayList<Tower>();
+    private ArrayList<Point> listPossiblePath = new ArrayList<Point>();
 
 
     private GameThread gameThread;
@@ -42,13 +41,17 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update()  {
-        for (ChibiCharacter chibi : chibiList) {
+        // create a possible path grid object and get the list of possible path for the current "round"
+        PossiblePathGrid possiblePathGrid = new PossiblePathGrid(listTowers);
+        listPossiblePath = possiblePathGrid.getListPossiblePath();
+
+        for (ChibiCharacter chibi : listChibis) {
             chibi.update();
         }
-        for (Explosion explosion : explosionsList) {
+        for (Explosion explosion : listExplosions) {
             explosion.update();
         }
-        for (Tower tower : towersList) {
+        for (Tower tower : listTowers) {
             tower.update();
         }
     }
@@ -56,13 +59,13 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas)  {
         super.draw(canvas);
-        for (ChibiCharacter chibi : chibiList) {
+        for (ChibiCharacter chibi : listChibis) {
             chibi.draw(canvas);
         }
-        for (Explosion explosion : explosionsList) {
+        for (Explosion explosion : listExplosions) {
             explosion.draw(canvas);
         }
-        for (Tower tower : towersList) {
+        for (Tower tower : listTowers) {
             tower.draw(canvas);
         }
     }
@@ -74,13 +77,13 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
         Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
-        chibiList.add(new ChibiCharacter(this, chibiBitmap1, 0, 0));
+        listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0));
 
 //        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
-//        chibiList.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
+//        listChibis.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
 //
 //        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
-//        towersList.add(new Tower(this, blockBasic1, 50, 50));
+//        listTowers.add(new Tower(this, blockBasic1, 50, 50));
 
 
 
@@ -120,14 +123,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
             ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
             //Explosion if you touch chibi
-            for (ChibiCharacter chibi : chibiList) {
+            for (ChibiCharacter chibi : listChibis) {
                 if ( chibi.getX() < x && x < chibi.getX() + chibi.getWidth()
                         && chibi.getY() < y && y < chibi.getY()+ chibi.getHeight()) {
                     chibiToKill.add(chibi);
                     // Create Explosion object.
                     Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.explosion);
                     Explosion explosion = new Explosion(this, bitmap,chibi.getX(),chibi.getY());
-                    this.explosionsList.add(explosion);
+                    this.listExplosions.add(explosion);
                 }
                 else {
                     // Moving if you didn't touch a chibi
@@ -136,10 +139,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                     chibi.setMovingVector(movingVectorX, movingVectorY);
                 }
             }
-            chibiList.removeAll(chibiToKill);
+            listChibis.removeAll(chibiToKill);
             return true;
         }
         return false;
+    }
+
+    public ArrayList<Point> getListPossiblePath() {
+        return this.listPossiblePath;
     }
 
 

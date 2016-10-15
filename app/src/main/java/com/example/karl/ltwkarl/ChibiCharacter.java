@@ -7,7 +7,6 @@ package com.example.karl.ltwkarl;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -106,13 +105,11 @@ public class ChibiCharacter extends GameObject {
 
         xGrid = getXGrid(x);
         yGrid = getYGrid(y);
-        Log.v(LOG_TAG, String.valueOf(xGrid));
-        Log.v(LOG_TAG, String.valueOf(yGrid));
+
+
         Point pointGrid = new Point(xGrid, yGrid);
 
-        PossiblePathGrid possiblePathGrid = new PossiblePathGrid(); // TODO Change this as a reference
-
-        ArrayList<Point> listPossiblePath = possiblePathGrid.getListPossiblePath();
+        ArrayList<Point> listPossiblePath = gameSurface.getListPossiblePath();
         ListIterator listPossiblePathIterator = listPossiblePath.listIterator();
 
         boolean found = false;
