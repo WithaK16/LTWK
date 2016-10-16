@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Point;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -92,11 +91,19 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
             listTowers.add(new Tower(this, blockBasic1, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
+        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
+            listTowers.add(new Tower(this, blockBasic1, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+        }
+        for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
+            listTowers.add(new Tower(this, blockBasic1, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+        }
+        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
+            listTowers.add(new Tower(this, blockBasic1, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+        }
+        for (int i = 11; i<15; i++) {
+            listTowers.add(new Tower(this, blockBasic1, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
+        }
 
-        Log.v(LOG_TAG, "WIDTH OBJECT " + WIDTH_OBJECT);
-        Log.v(LOG_TAG, "HEIGHT OBJECT " + HEIGHT_OBJECT);
-        Log.v(LOG_TAG, "HEIGHT " + getHeight());
-        Log.v(LOG_TAG, "WIDTH " + getWidth());
 
         // create a possible path grid object and get the list of possible path for the current "round"
         GameMap gameMap = new GameMap(this, listTowers);

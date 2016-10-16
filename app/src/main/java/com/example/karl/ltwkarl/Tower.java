@@ -23,6 +23,7 @@ public class Tower extends GameObject {
     }
 
     public void draw(Canvas canvas)  {
+
         canvas.drawBitmap(this.image, this.x, this.y, null);
     }
 }
