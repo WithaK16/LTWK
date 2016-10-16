@@ -36,11 +36,14 @@ public class ChibiCharacter extends GameObject implements Mover {
     // Velocity of game character (pixel/millisecond)
     public static final float VELOCITY = 0.5f;
 
+    private int speed = 6; // Speed in pixel, TODO stop hardcoding
+
     private int movingVectorX = 0;
     private int movingVectorY = 0;
 
     private int xGrid;
     private int yGrid;
+
 
     private long lastDrawNanoTime =-1;
 
@@ -127,13 +130,25 @@ public class ChibiCharacter extends GameObject implements Mover {
 
         boolean found = false;
         // TODO how to deal with a creature on a forbidden path?
+        // TODO I think I can simplify this with a next node / current node
         while (listPossiblePathIterator.hasNext()) {
             Point possiblePath = (Point)listPossiblePathIterator.next();
             if (found == true)
             {
-                int newMovingVectorX = (possiblePath.x - pointGrid.x) * width;
-                int newMovingVectorY = (possiblePath.y - pointGrid.y) * height;
-                setMovingVector(newMovingVectorX, newMovingVectorY);
+                if (x % width == 0 && y % height == 0) {
+                    if (possiblePath.x - pointGrid.x > 0) {
+                        setMovingVector(speed, 0);
+                    }
+                    else if (possiblePath.x - pointGrid.x < 0) {
+                        setMovingVector(-speed, 0);
+                    }
+                    else if (possiblePath.y - pointGrid.y > 0) {
+                        setMovingVector(0, speed);
+                    }
+                    else if (possiblePath.y - pointGrid.y < 0) {
+                        setMovingVector(0, -speed);
+                    }
+                }
                 break;
             }
             else if (pointGrid.equals(possiblePath)) {
@@ -141,15 +156,10 @@ public class ChibiCharacter extends GameObject implements Mover {
             }
         }
 
-        // Distance moves
-        float distance = VELOCITY * deltaTime;
-
-        //TODO Make it simpler and more logic regarding the new way to calculate
-        double movingVectorLength = Math.sqrt(movingVectorX * movingVectorX + movingVectorY * movingVectorY);
 
         // Calculate the new position of the game character.
-        this.x = x +  (int)(distance * movingVectorX / movingVectorLength);
-        this.y = y +  (int)(distance * movingVectorY / movingVectorLength);
+        this.x = x +  movingVectorX;
+        this.y = y +  movingVectorY;
 
 
         // When the game's character touches the edge of the screen, then change direction
@@ -198,7 +208,7 @@ public class ChibiCharacter extends GameObject implements Mover {
     }
 
     public void setMovingVector(int movingVectorX, int movingVectorY)  {
-        this.movingVectorX= movingVectorX;
+        this.movingVectorX = movingVectorX;
         this.movingVectorY = movingVectorY;
     }
 
