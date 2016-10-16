@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -30,6 +31,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private PathFinder finder;
     /** The last path found for the current unit */
     private ArrayList<Point> listPossiblePath = new ArrayList();
+
+    // These variable contain width and height of all object (use for calculating the grid etc.)
+    private int WIDTH_OBJECT;
+    private int HEIGHT_OBJECT;
 
 
     private GameThread gameThread;
@@ -76,26 +81,36 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-
         Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
+        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
+        // Setting this important variable at the init of the surface (will be used by other method)
+        WIDTH_OBJECT = blockBasic1.getWidth();
+        HEIGHT_OBJECT = blockBasic1.getHeight();
+        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
+            listTowers.add(new Tower(this, blockBasic1, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+        }
+        for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
+            listTowers.add(new Tower(this, blockBasic1, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+        }
+
+        Log.v(LOG_TAG, "WIDTH OBJECT " + WIDTH_OBJECT);
+        Log.v(LOG_TAG, "HEIGHT OBJECT " + HEIGHT_OBJECT);
+        Log.v(LOG_TAG, "HEIGHT " + getHeight());
+        Log.v(LOG_TAG, "WIDTH " + getWidth());
+
+        // create a possible path grid object and get the list of possible path for the current "round"
+        GameMap gameMap = new GameMap(this, listTowers);
+        /** The path finder we'll use to search our map */
+        finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
+        listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0),
+                0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
+                11, 0)
+                .getPossiblePath();
+
         listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
 
 //        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
 //        listChibis.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
-//
-        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
-        for (int i = 0; i<7; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 2*GameMap.WIDTH_GRID, i*GameMap.HEIGHT_GRID));
-        }
-
-        // create a possible path grid object and get the list of possible path for the current "round"
-        GameMap gameMap = new GameMap(listTowers);
-        /** The path finder we'll use to search our map */
-        finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
-        listPossiblePath = finder.findPath(listChibis.get(0),
-                listChibis.get(0).getX(), listChibis.get(0).getY(),
-                25, 0)
-                .getPossiblePath();
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -131,6 +146,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             int x = (int)event.getX();
             int y = (int)event.getY();
 
+            boolean createChibi = false;
             ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
             //Explosion if you touch chibi
             for (ChibiCharacter chibi : listChibis) {
@@ -143,11 +159,16 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                     this.listExplosions.add(explosion);
                 }
                 else {
-                    // Moving if you didn't touch a chibi
-                    int movingVectorX = x - chibi.getX();
-                    int movingVectorY = y - chibi.getY();
-                    chibi.setMovingVector(movingVectorX, movingVectorY);
+//                    // Moving if you didn't touch a chibi
+//                    int movingVectorX = x - chibi.getX();
+//                    int movingVectorY = y - chibi.getY();
+//                    chibi.setMovingVector(movingVectorX, movingVectorY);
+                    createChibi = true;
                 }
+            }
+            if (createChibi) {
+                Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
+                listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
             }
             listChibis.removeAll(chibiToKill);
             return true;
@@ -156,7 +177,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public ArrayList getListPossiblePath() {
+
         return this.listPossiblePath;
+    }
+
+    public int getWIDTH_OBJECT() {
+        return WIDTH_OBJECT;
+    }
+    public int getHEIGHT_OBJECT() {
+        return HEIGHT_OBJECT;
     }
 
 
