@@ -1,5 +1,7 @@
 package com.example.karl.ltwkarl;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
@@ -11,11 +13,14 @@ import java.util.ArrayList;
  * @author Kevin Glass
  */
 public class GameMap implements TileBasedMap {
-    public static final int CELL_GRID_SIZE_PIXEL = 32; // TODO stop hardcoding
+
+    private static final String LOG_TAG = GameSurface.class.getSimpleName();
+
+    private static int CELL_GRID_SIZE_PIXEL;
     /** The map width in tiles */
-    public static final int WIDTH_GRID = 60; // TODO stop hardcoding
+    private static int WIDTH_GRID;
     /** The map height in tiles */
-    public static final int HEIGHT_GRID = 29; // TODO stop hardcoding
+    private static int HEIGHT_GRID ;
 
     /** Indicate grass terrain at a given location */
     public static final int GRASS = 0;
@@ -23,16 +28,31 @@ public class GameMap implements TileBasedMap {
     public static final int TOWER = 1;
 
     /** The terrain settings for each tile in the map */
-    private int[][] terrain = new int[WIDTH_GRID][HEIGHT_GRID];
+    private int[][] terrain;
     /** The unit in each tile of the map */
-    private int[][] units = new int[WIDTH_GRID][HEIGHT_GRID];
+    private int[][] units;
     /** Indicator if a given tile has been visited during the search */
-    private boolean[][] visited = new boolean[WIDTH_GRID][HEIGHT_GRID];
+    private boolean[][] visited ;
+
+    private GameSurface gameSurface;
 
     /**
      * Create a new test map with some default configuration
      */
-    public GameMap(ArrayList<Tower> listTowers) {
+    public GameMap(GameSurface gameSurface, ArrayList<Tower> listTowers) {
+
+        this.gameSurface = gameSurface;
+        this.CELL_GRID_SIZE_PIXEL = gameSurface.getWIDTH_OBJECT();
+        this.WIDTH_GRID = gameSurface.getWidth() / CELL_GRID_SIZE_PIXEL;
+        this.HEIGHT_GRID = gameSurface.getHeight() / CELL_GRID_SIZE_PIXEL;
+        this.terrain = new int[WIDTH_GRID][HEIGHT_GRID];
+        this.units = new int[WIDTH_GRID][HEIGHT_GRID];
+        this.visited = new boolean[WIDTH_GRID][HEIGHT_GRID];
+
+        // DEBUG TODO enlever
+        Log.v(LOG_TAG, "WIDTH GRID GAMEMAP " + String.valueOf(WIDTH_GRID));
+        Log.v(LOG_TAG, "HEIGHT GRID GAMEMAP " + String.valueOf(HEIGHT_GRID));
+
         fillArea(0, 0,
                 WIDTH_GRID, HEIGHT_GRID,
                 GRASS); // Start with filling full grass map
@@ -78,6 +98,7 @@ public class GameMap implements TileBasedMap {
      * @see TileBasedMap//visited(int, int)
      */
     public boolean visited(int x, int y) {
+
         return visited[x][y];
     }
 
@@ -152,6 +173,7 @@ public class GameMap implements TileBasedMap {
      * @see TileBasedMap#getCost(Mover, int, int, int, int)
      */
     public float getCost(Mover mover, int sx, int sy, int tx, int ty) {
+
         return 1;
     }
 
@@ -159,20 +181,23 @@ public class GameMap implements TileBasedMap {
      * @see TileBasedMap#getHeightInTiles()
      */
     public int getHeightInTiles() {
-        return WIDTH_GRID;
+
+        return HEIGHT_GRID;
     }
 
     /**
      * @see TileBasedMap#getWidthInTiles()
      */
     public int getWidthInTiles() {
-        return HEIGHT_GRID;
+
+        return WIDTH_GRID;
     }
 
     /**
      * @see TileBasedMap#pathFinderVisited(int, int)
      */
     public void pathFinderVisited(int x, int y) {
+
         visited[x][y] = true;
     }
 

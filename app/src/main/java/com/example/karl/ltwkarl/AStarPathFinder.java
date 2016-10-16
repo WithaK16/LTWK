@@ -1,6 +1,8 @@
 package com.example.karl.ltwkarl;
 
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -11,6 +13,9 @@ import java.util.Collections;
  * @author Kevin Glass
  */
 public class AStarPathFinder implements PathFinder {
+
+    private static final String LOG_TAG = AStarPathFinder.class.getSimpleName();
+
     /** The set of nodes that have been searched through */
     private ArrayList closed = new ArrayList();
     /** The set of nodes that we do not yet consider fully searched */
@@ -53,6 +58,11 @@ public class AStarPathFinder implements PathFinder {
         this.map = map;
         this.maxSearchDistance = maxSearchDistance;
         this.allowDiagMovement = allowDiagMovement;
+
+        //DEBUG TODO Erase it
+        
+        Log.v(LOG_TAG, "WIDTH for A* " + String.valueOf(map.getWidthInTiles()));
+        Log.v(LOG_TAG, "HEIGHT for A* " +String.valueOf(map.getHeightInTiles()));
 
         nodes = new Node[map.getWidthInTiles()][map.getHeightInTiles()];
         for (int x=0;x<map.getWidthInTiles();x++) {

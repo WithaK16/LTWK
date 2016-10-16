@@ -34,7 +34,7 @@ public class ChibiCharacter extends GameObject implements Mover {
     private Bitmap[] bottomToTops;
 
     // Velocity of game character (pixel/millisecond)
-    public static final float VELOCITY = 0.05f;
+    public static final float VELOCITY = 0.5f;
 
     private int movingVectorX = 0;
     private int movingVectorY = 0;
@@ -46,6 +46,8 @@ public class ChibiCharacter extends GameObject implements Mover {
 
     private GameSurface gameSurface;
 
+    private ArrayList<Point> listPossiblePath;
+
 
     public ChibiCharacter(GameSurface gameSurface, Bitmap image, int unitType,  int x, int y) {
         super(image, 4, 3, x, y);
@@ -56,6 +58,9 @@ public class ChibiCharacter extends GameObject implements Mover {
 
         this.xGrid = getXGrid(x);
         this.yGrid = getYGrid(y);
+
+
+        listPossiblePath = gameSurface.getListPossiblePath();
 
         this.topToBottoms = new Bitmap[colCount]; // 3
         this.rightToLefts = new Bitmap[colCount]; // 3
@@ -92,6 +97,7 @@ public class ChibiCharacter extends GameObject implements Mover {
     }
 
     public int getUnitType() {
+
         return unitType;
     }
 
@@ -115,10 +121,8 @@ public class ChibiCharacter extends GameObject implements Mover {
         xGrid = getXGrid(x);
         yGrid = getYGrid(y);
 
-
         Point pointGrid = new Point(xGrid, yGrid);
 
-        ArrayList<Point> listPossiblePath = gameSurface.getListPossiblePath();
         ListIterator listPossiblePathIterator = listPossiblePath.listIterator();
 
         boolean found = false;
@@ -127,8 +131,8 @@ public class ChibiCharacter extends GameObject implements Mover {
             Point possiblePath = (Point)listPossiblePathIterator.next();
             if (found == true)
             {
-                int newMovingVectorX = possiblePath.x*32 - pointGrid.x*32;
-                int newMovingVectorY = possiblePath.y*32 - pointGrid.y*32;
+                int newMovingVectorX = (possiblePath.x - pointGrid.x) * width;
+                int newMovingVectorY = (possiblePath.y - pointGrid.y) * height;
                 setMovingVector(newMovingVectorX, newMovingVectorY);
                 break;
             }
@@ -139,12 +143,14 @@ public class ChibiCharacter extends GameObject implements Mover {
 
         // Distance moves
         float distance = VELOCITY * deltaTime;
-        //
+
+        //TODO Make it simpler and more logic regarding the new way to calculate
         double movingVectorLength = Math.sqrt(movingVectorX * movingVectorX + movingVectorY * movingVectorY);
 
         // Calculate the new position of the game character.
         this.x = x +  (int)(distance * movingVectorX / movingVectorLength);
         this.y = y +  (int)(distance * movingVectorY / movingVectorLength);
+
 
         // When the game's character touches the edge of the screen, then change direction
 
@@ -197,9 +203,9 @@ public class ChibiCharacter extends GameObject implements Mover {
     }
 
     public int getXGrid(int x) {
-        return x / 32;  // TODO Don't let this hard coded value of 32 px for the grid
+        return x / width;
     }
     public int getYGrid(int y) {
-        return y / 32;  // TODO Don't let this hard coded value of 32 px for the grid
+        return y / height;
     }
 }
