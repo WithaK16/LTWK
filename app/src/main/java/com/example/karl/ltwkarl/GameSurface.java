@@ -50,15 +50,25 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     public void update()  {
 
-
-        for (ChibiCharacter chibi : listChibis) {
-            chibi.update();
-        }
-        for (Explosion explosion : listExplosions) {
-            explosion.update();
-        }
         for (Tower tower : listTowers) {
             tower.update();
+        }
+        ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
+        //Explosion if chibi as no more HP
+        for (ChibiCharacter chibi : listChibis) {
+            if (chibi.getHealthPoint() <= 0) {
+                chibiToKill.add(chibi);
+                // Create Explosion object.
+                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.explosion);
+                Explosion explosion = new Explosion(this, bitmap,chibi.getX(),chibi.getY());
+                this.listExplosions.add(explosion);
+            }
+            chibi.update();
+        }
+        listChibis.removeAll(chibiToKill);
+
+        for (Explosion explosion : listExplosions) {
+            explosion.update();
         }
     }
 
@@ -86,22 +96,22 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         WIDTH_OBJECT = blockBasic1.getWidth();
         HEIGHT_OBJECT = blockBasic1.getHeight();
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, blockBasic1, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, blockBasic1, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 11; i<15; i++) {
-            listTowers.add(new Tower(this, blockBasic1, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, blockBasic1, 0, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
         }
 
 
@@ -153,31 +163,20 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             int x = (int)event.getX();
             int y = (int)event.getY();
 
-            boolean createChibi = false;
+            boolean createChibi = true;
             ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
-            //Explosion if you touch chibi
-            for (ChibiCharacter chibi : listChibis) {
-                if ( chibi.getX() < x && x < chibi.getX() + chibi.getWidth()
-                        && chibi.getY() < y && y < chibi.getY()+ chibi.getHeight()) {
-                    chibiToKill.add(chibi);
-                    // Create Explosion object.
-                    Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.explosion);
-                    Explosion explosion = new Explosion(this, bitmap,chibi.getX(),chibi.getY());
-                    this.listExplosions.add(explosion);
-                }
-                else {
-//                    // Moving if you didn't touch a chibi
-//                    int movingVectorX = x - chibi.getX();
-//                    int movingVectorY = y - chibi.getY();
-//                    chibi.setMovingVector(movingVectorX, movingVectorY);
-                    createChibi = true;
+            for (Tower tower : listTowers) {
+                if ( tower.getX() < x && x < tower.getX() + tower.getWidth()
+                        && tower.getY() < y && y < tower.getY()+ tower.getHeight()) {
+                    tower.setTowerType(1); // TODO Stop hardcoding, when touching create an attack tower
+                    createChibi = false;
                 }
             }
+
             if (createChibi) {
                 Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
                 listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
             }
-            listChibis.removeAll(chibiToKill);
             return true;
         }
         return false;
@@ -186,6 +185,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public ArrayList getListPossiblePath() {
 
         return this.listPossiblePath;
+    }
+    public ArrayList<ChibiCharacter> getListChibis() {
+        return listChibis;
     }
 
     public int getWIDTH_OBJECT() {

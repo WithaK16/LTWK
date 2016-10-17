@@ -7,6 +7,7 @@ package com.example.karl.ltwkarl;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -36,13 +37,15 @@ public class ChibiCharacter extends GameObject implements Mover {
     // Velocity of game character (pixel/millisecond)
     public static final float VELOCITY = 0.5f;
 
-    private int speed = 6; // Speed in pixel, TODO stop hardcoding
+    private int speed = 3; // Speed in pixel, TODO stop hardcoding
 
     private int movingVectorX = 0;
     private int movingVectorY = 0;
 
     private int xGrid;
     private int yGrid;
+
+    private int healthPoint;
 
 
     private long lastDrawNanoTime =-1;
@@ -61,6 +64,8 @@ public class ChibiCharacter extends GameObject implements Mover {
 
         this.xGrid = getXGrid(x);
         this.yGrid = getYGrid(y);
+
+        this.healthPoint = 1000; //TODO Stop hardcoding that, put in constructor for variable HP
 
 
         listPossiblePath = gameSurface.getListPossiblePath();
@@ -104,9 +109,17 @@ public class ChibiCharacter extends GameObject implements Mover {
         return unitType;
     }
 
+    public int getHealthPoint() {
+        return healthPoint;
+    }
+    public void setHealthPoint(int healthPoint) {
+        this.healthPoint = healthPoint;
+    }
+
 
     public void update()  {
 
+        Log.v(LOG_TAG, "CHIBI HP = " + String.valueOf(healthPoint));
         this.colUsing++;
         if(colUsing >= this.colCount)  {
             this.colUsing =0;
