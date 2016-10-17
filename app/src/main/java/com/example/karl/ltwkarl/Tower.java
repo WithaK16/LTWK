@@ -72,7 +72,6 @@ public class Tower {
             else if (Math.hypot((chibiCharacter.getX()-x), (chibiCharacter.getY()-y)) <= rangeAttack) {
                 chibiCharacter.setHealthPoint(chibiCharacter.getHealthPoint() - damageAttack);
                 ammunition = ammunition -1;
-                //TODO SET angle with the unit
                 angleWithTarget = Utilities.getAngle((double)chibiCharacter.getX()-x,
                         (double)chibiCharacter.getY()-y);
             }

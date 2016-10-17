@@ -30,6 +30,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<ChibiCharacter> listChibis = new ArrayList<ChibiCharacter>();
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
+    private RoundManager currentRound;
 
     /** The path finder we'll use to search our map */
     private PathFinder finder;
@@ -42,7 +43,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     //Variable containing every bitmap used during the game
     private Bitmap scaledBackground;
-    private Bitmap chibiCharacter;
+    public Bitmap chibiCharacter;
     public Bitmap blockTower;
     public Bitmap[][] attackTower1;
     public Bitmap[][] attackTower2;
@@ -65,9 +66,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     public void update()  {
 
+        // First update the current round
+        currentRound.update();
+
+        //update the tower
         for (Tower tower : listTowers) {
             tower.update();
         }
+
+        //update Chibis
         ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
         //Explosion if chibi as no more HP
         for (ChibiCharacter chibi : listChibis) {
@@ -82,6 +89,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
         listChibis.removeAll(chibiToKill);
 
+        //update explosion
         for (Explosion explosion : listExplosions) {
             explosion.update();
         }
@@ -93,15 +101,16 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         //Drawing background
         canvas.drawBitmap(scaledBackground, 0, 0, null);
 
+        for (Tower tower : listTowers) {
+            tower.draw(canvas);
+        }
         for (ChibiCharacter chibi : listChibis) {
             chibi.draw(canvas);
         }
         for (Explosion explosion : listExplosions) {
             explosion.draw(canvas);
         }
-        for (Tower tower : listTowers) {
-            tower.draw(canvas);
-        }
+
     }
 
     // Implements method of SurfaceHolder.Callback
@@ -175,7 +184,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                 11, 0)
                 .getPossiblePath();
 
-        listChibis.add(new ChibiCharacter(this, chibiCharacter, 0, 0, 0));
+        this.currentRound = new RoundManager(this, 20);
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -221,8 +230,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             if (createChibi) {
-                Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
-                listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
+                listChibis.add(new ChibiCharacter(this, chibiCharacter, 0, 0, 0));
             }
             return true;
         }
