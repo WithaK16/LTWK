@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -35,6 +36,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private int WIDTH_OBJECT;
     private int HEIGHT_OBJECT;
 
+    private Bitmap scaledBackground;
+
 
     private GameThread gameThread;
 
@@ -43,9 +46,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         // Make Game Surface focusable so it can handle events. .
         this.setFocusable(true);
-
         // Sét callback.
         this.getHolder().addCallback(this);
+
+        //this.setZOrderOnTop(true);
+        this.getHolder().setFormat(PixelFormat.TRANSPARENT);
     }
 
     public void update()  {
@@ -75,6 +80,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas)  {
         super.draw(canvas);
+        //Drawing background
+        canvas.drawBitmap(scaledBackground, 0, 0, null);
+
         for (ChibiCharacter chibi : listChibis) {
             chibi.draw(canvas);
         }
@@ -89,6 +97,13 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     // Implements method of SurfaceHolder.Callback
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
+        //Create a scalable background
+        Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.snow_template1);
+        float scale = (float)background.getHeight()/(float)getHeight();
+        int newWidth = Math.round(background.getWidth()/scale);
+        int newHeight = Math.round(background.getHeight()/scale);
+        scaledBackground = Bitmap.createScaledBitmap(background, newWidth, newHeight, true);
 
         Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
         Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);

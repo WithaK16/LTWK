@@ -47,8 +47,8 @@ public class GameThread extends Thread {
             // Interval to redraw game
             // (Change nanoseconds to milliseconds)
             long waitTime = (now - startTime)/1000000;
-            if(waitTime < 30)  {
-                waitTime = 30; // Millisecond.
+            if(waitTime < 10)  {
+                waitTime = 10; // Millisecond.
             }
             System.out.print(" Wait Time=" + waitTime);
 
