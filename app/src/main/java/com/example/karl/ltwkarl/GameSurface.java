@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -18,8 +17,9 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 
 import static com.example.karl.ltwkarl.R.drawable.block_tower;
-import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_0;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_1;
+import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_2;
+import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_3;
 import static com.example.karl.ltwkarl.R.drawable.chibi1;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
@@ -44,8 +44,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap scaledBackground;
     private Bitmap chibiCharacter;
     public Bitmap blockTower;
-    public Bitmap[][] attackTower0;
     public Bitmap[][] attackTower1;
+    public Bitmap[][] attackTower2;
+    public Bitmap[][] attackTower3;
+
 
     private GameThread gameThread;
 
@@ -122,33 +124,37 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
         blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
         blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
-        Bitmap attackTower0_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_0);
         Bitmap attackTower1_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_1);
+        Bitmap attackTower2_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_2);
+        Bitmap attackTower3_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_3);
 
-        attackTower0 = new Bitmap[2][4];
         attackTower1 = new Bitmap[2][4];
+        attackTower2 = new Bitmap[2][4];
+        attackTower3 = new Bitmap[2][4];
+
         // CREATE SPRITE FOR tower_attack_0
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 4; column++) {
-                attackTower0[row][column] = Bitmap.createBitmap(attackTower0_tot,
-                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
                 attackTower1[row][column] = Bitmap.createBitmap(attackTower1_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+                attackTower2[row][column] = Bitmap.createBitmap(attackTower2_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+                attackTower3[row][column] = Bitmap.createBitmap(attackTower3_tot,
                         column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
             }
         }
-        Log.v(LOG_TAG, "WIDTH OBJECT = " + String.valueOf(WIDTH_OBJECT));
-        Log.v(LOG_TAG, "HEIGHT OBJECT = " + String.valueOf(HEIGHT_OBJECT));
-        Log.v(LOG_TAG, "getHeight() = " + String.valueOf(getHeight()));
+
+
         // CREATE AN INIT MAP
         // TODO Make it cleaner, more flexible etc.
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
             listTowers.add(new Tower(this, 1, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, 0, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 2, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, 0, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 3, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
             listTowers.add(new Tower(this, 0, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));

@@ -83,6 +83,8 @@ public class Tower {
     }
 
     public void draw(Canvas canvas) {
+        // If towertype == 0 then it's fix, then no need to calculate
+
         if (towerType == 0) {
             canvas.drawBitmap(gameSurface.blockTower, this.x, this.y, null);
         } else {
@@ -90,41 +92,47 @@ public class Tower {
             int col = 0;
             switch (angleWithTarget) {
                 case "N":
-                    row = 1;
-                    col = 1;
+                    row = 0;
+                    col = 0;
                     break;
                 case "NW":
-                    row = 1;
-                    col = 2;
-                    break;
-                case "W":
-                    row = 1;
-                    col = 3;
-                    break;
-                case "SW":
-                    row = 1;
-                    col = 4;
-                    break;
-                case "S":
-                    row = 2;
+                    row = 0;
                     col = 1;
                     break;
-                case "SE":
-                    row = 2;
+                case "W":
+                    row = 0;
                     col = 2;
                     break;
-                case "E":
-                    row = 2;
+                case "SW":
+                    row = 0;
                     col = 3;
                     break;
+                case "S":
+                    row = 1;
+                    col = 0;
+                    break;
+                case "SE":
+                    row = 1;
+                    col = 1;
+                    break;
+                case "E":
+                    row = 1;
+                    col = 2;
+                    break;
                 case "NE":
-                    row = 2;
-                    col = 4;
+                    row = 1;
+                    col = 3;
                     break;
             }
-            //TODO Case with attackTower0 get the file in the same format as attackTower1
-            canvas.drawBitmap(gameSurface.attackTower1[row - 1][col - 1], this.x, this.y, null);
+            if (towerType == 1) {
+                canvas.drawBitmap(gameSurface.attackTower1[row][col], this.x, this.y, null);
+            } else if (towerType == 2) {
+                canvas.drawBitmap(gameSurface.attackTower2[row][col], this.x, this.y, null);
+            } else if (towerType == 3) {
+                canvas.drawBitmap(gameSurface.attackTower3[row][col], this.x, this.y, null);
+            }
         }
     }
+
 
 }
