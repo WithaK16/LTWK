@@ -47,6 +47,14 @@ public class Tower {
 
         return towerType;
     }
+    public void upgradeTowerType () {
+        if (towerType == 3) {
+            towerType = 0;
+        }
+        else {
+            towerType += 1;
+        }
+    }
     public int getX()  {
 
         return this.x;

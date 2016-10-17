@@ -13,7 +13,7 @@ public class RoundManager {
     private GameSurface gameSurface;
     private boolean isRoundFinish;
     private ArrayList<ChibiCharacter> listChibis;
-    private int numberOfChibis;
+    private int numberOfChibisLeft;
     private long totalDurationMs;
     private long updateTime;
 
@@ -23,7 +23,7 @@ public class RoundManager {
 
         this.isRoundFinish = false;
         this.gameSurface = gameSurface;
-        this.numberOfChibis = numberOfChibis;
+        this.numberOfChibisLeft = numberOfChibis;
         this.listChibis = gameSurface.getListChibis();
         this.totalDurationMs = 0;
         this.updateTime = System.currentTimeMillis();
@@ -36,9 +36,9 @@ public class RoundManager {
         //Add a chibi every 50 ms
         totalDurationMs += System.currentTimeMillis() - updateTime;
         if (totalDurationMs >= 5000) {
-            if (numberOfChibis > 0) {
+            if (numberOfChibisLeft > 0) {
                 listChibis.add(new ChibiCharacter(gameSurface, gameSurface.chibiCharacter, 0, 0, 0));
-                numberOfChibis -= 1;
+                numberOfChibisLeft -= 1;
             }
             else {
                 isRoundFinish = true;

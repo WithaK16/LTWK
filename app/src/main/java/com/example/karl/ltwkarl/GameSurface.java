@@ -21,6 +21,8 @@ import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_1;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_2;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_3;
 import static com.example.karl.ltwkarl.R.drawable.chibi1;
+import static com.example.karl.ltwkarl.R.drawable.dollar_img;
+import static com.example.karl.ltwkarl.R.drawable.figures_img;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -31,6 +33,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
     private RoundManager currentRound;
+    private int goldPlayer;
 
     /** The path finder we'll use to search our map */
     private PathFinder finder;
@@ -48,6 +51,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public Bitmap[][] attackTower1;
     public Bitmap[][] attackTower2;
     public Bitmap[][] attackTower3;
+    private Bitmap dollarSign;
+    private Bitmap[] figures = new Bitmap[10];
 
 
     private GameThread gameThread;
@@ -87,6 +92,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
             chibi.update();
         }
+        // kill chibi and update gold
+        //TODO Update gold as a function of the chibi level
+        if (goldPlayer <= 99) {
+            goldPlayer += chibiToKill.size();
+        }
         listChibis.removeAll(chibiToKill);
 
         //update explosion
@@ -100,6 +110,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         super.draw(canvas);
         //Drawing background
         canvas.drawBitmap(scaledBackground, 0, 0, null);
+        //Draw current gold (power of ten + rest)
+        //x=1200, y = 50 is arbitrary value
+        canvas.drawBitmap(figures[goldPlayer / 10], 1200, 50, null);
+        canvas.drawBitmap(figures[goldPlayer % 10], 1200+(WIDTH_OBJECT/2), 50, null);
+        canvas.drawBitmap(dollarSign, 1200+WIDTH_OBJECT, 50, null);
 
         for (Tower tower : listTowers) {
             tower.draw(canvas);
@@ -122,12 +137,22 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
         HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
 
+        //Set initial gold for player
+        this.goldPlayer = 20;
+
         //Create a scalable background
         Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.snow_template1);
         float scale = (float)background.getHeight()/(float)getHeight();
         int newWidth = Math.round(background.getWidth()/scale);
         int newHeight = Math.round(background.getHeight()/scale);
         scaledBackground = Bitmap.createScaledBitmap(background, newWidth, newHeight, true);
+
+        // init figures_img and dollar_img sign
+        dollarSign = BitmapFactory.decodeResource(this.getResources(), dollar_img);
+        for(int i=0; i<10; i++){
+            figures[i] = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), figures_img),
+                    i*WIDTH_OBJECT, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
+        }
 
         // Create all the bitmap and scale them
         chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
@@ -152,7 +177,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                         column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
             }
         }
-
 
         // CREATE AN INIT MAP
         // TODO Make it cleaner, more flexible etc.
@@ -224,7 +248,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                 if ( tower.getX() < x && x < tower.getX() + WIDTH_OBJECT
                         && tower.getY() < y && y < tower.getY()+ HEIGHT_OBJECT) {
                     // Change the tower type (to attack if block , to block if attack)
-                    tower.setTowerType(1-tower.getTowerType());
+                    tower.upgradeTowerType();
                     createChibi = false;
                 }
             }
@@ -252,5 +276,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         return HEIGHT_OBJECT;
     }
 
+    public void setGold(int gold) {
+        this.goldPlayer = gold;
+    }
 
 }
