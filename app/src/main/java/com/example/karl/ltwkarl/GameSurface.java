@@ -33,7 +33,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
     private RoundManager currentRound;
-    private int goldPlayer;
+    private PlayerManager currentPlayer;
+
 
     /** The path finder we'll use to search our map */
     private PathFinder finder;
@@ -53,6 +54,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public Bitmap[][] attackTower3;
     private Bitmap dollarSign;
     private Bitmap[] figures = new Bitmap[10];
+    private Bitmap lifeLeft;
 
 
     private GameThread gameThread;
@@ -80,6 +82,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         //update Chibis
+        //TODO maybe add that into RoundManager?
         ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
         //Explosion if chibi as no more HP
         for (ChibiCharacter chibi : listChibis) {
@@ -93,10 +96,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             chibi.update();
         }
         // kill chibi and update gold
-        //TODO Update gold as a function of the chibi level
-        if (goldPlayer <= 99) {
-            goldPlayer += chibiToKill.size();
-        }
+        //TODO Update gold as a function of the chibi level (into function addGoldPlayer)
+        currentPlayer.addGoldPlayer(chibiToKill);
         listChibis.removeAll(chibiToKill);
 
         //update explosion
@@ -110,11 +111,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         super.draw(canvas);
         //Drawing background
         canvas.drawBitmap(scaledBackground, 0, 0, null);
-        //Draw current gold (power of ten + rest)
+
+        //Draw current gold (power of ten + rest) and life
         //x=1200, y = 50 is arbitrary value
-        canvas.drawBitmap(figures[goldPlayer / 10], 1200, 50, null);
-        canvas.drawBitmap(figures[goldPlayer % 10], 1200+(WIDTH_OBJECT/2), 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], 1200, 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1200+(WIDTH_OBJECT/2), 50, null);
         canvas.drawBitmap(dollarSign, 1200+WIDTH_OBJECT, 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], 1200+(2*WIDTH_OBJECT), 50, null);
+        canvas.drawBitmap(lifeLeft, 1200+(3*WIDTH_OBJECT), 50, null);
+
 
         for (Tower tower : listTowers) {
             tower.draw(canvas);
@@ -137,8 +142,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
         HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
 
-        //Set initial gold for player
-        this.goldPlayer = 20;
+        //Create a player
+        this.currentPlayer = new PlayerManager(this);
 
         //Create a scalable background
         Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.snow_template1);
@@ -153,6 +158,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             figures[i] = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), figures_img),
                     i*WIDTH_OBJECT, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
         }
+        //init heart icon
+        lifeLeft = BitmapFactory.decodeResource(getResources(), R.drawable.heart_img);
 
         // Create all the bitmap and scale them
         chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
@@ -276,8 +283,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         return HEIGHT_OBJECT;
     }
 
-    public void setGold(int gold) {
-        this.goldPlayer = gold;
-    }
+
 
 }
