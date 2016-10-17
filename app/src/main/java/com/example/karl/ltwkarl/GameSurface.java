@@ -147,7 +147,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         while(retry) {
             try {
                 this.gameThread.setRunning(false);
-
                 // Parent thread must wait until the end of GameThread.
                 this.gameThread.join();
             }catch(InterruptedException e)  {
