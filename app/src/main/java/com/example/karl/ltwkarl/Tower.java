@@ -35,6 +35,24 @@ public class Tower extends GameObject {
         this.damageAttack = 2;
     }
 
+    public void setTowerType (int towerType) {
+        // TODO How to deal with the bitmap image? Feel like redunduncy between gamesurface and tower
+        // TODO Implement a better way to deal with it
+        if (towerType == 0) {
+            this.image = BitmapFactory.decodeResource(gameSurface.getResources(), R.drawable.block_basic);
+            this.towerType = towerType;
+        }
+        else if (towerType == 1) {
+            this.image = BitmapFactory.decodeResource(gameSurface.getResources(), R.drawable.block_tower_attack_2);
+            this.towerType = towerType;
+        }
+
+    }
+
+    public int getTowerType() {
+        return towerType;
+    }
+
     public void update()  {
 
         if (towerType == 0){
@@ -52,15 +70,9 @@ public class Tower extends GameObject {
                 ammunition = ammunition -1;
             }
         }
-
     }
-    public void setTowerType (int towerType) {
 
-        Bitmap blockTowerAttack = BitmapFactory.decodeResource(gameSurface.getResources(), R.drawable.block_tower_attack_2);
-        this.towerType = towerType;
-        this.image = blockTowerAttack;
 
-    }
 
     public void draw(Canvas canvas)  {
         canvas.drawBitmap(this.image, this.x, this.y, null);

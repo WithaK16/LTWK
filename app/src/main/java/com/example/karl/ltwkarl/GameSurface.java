@@ -168,7 +168,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             for (Tower tower : listTowers) {
                 if ( tower.getX() < x && x < tower.getX() + tower.getWidth()
                         && tower.getY() < y && y < tower.getY()+ tower.getHeight()) {
-                    tower.setTowerType(1); // TODO Stop hardcoding, when touching create an attack tower
+                    // Change the tower type (to attack if block , to block if attack)
+                    tower.setTowerType(1-tower.getTowerType());
                     createChibi = false;
                 }
             }
