@@ -1,8 +1,6 @@
 package com.example.karl.ltwkarl;
 
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -59,10 +57,6 @@ public class AStarPathFinder implements PathFinder {
         this.maxSearchDistance = maxSearchDistance;
         this.allowDiagMovement = allowDiagMovement;
 
-        //DEBUG TODO Erase it
-        
-        Log.v(LOG_TAG, "WIDTH for A* " + String.valueOf(map.getWidthInTiles()));
-        Log.v(LOG_TAG, "HEIGHT for A* " +String.valueOf(map.getHeightInTiles()));
 
         nodes = new Node[map.getWidthInTiles()][map.getHeightInTiles()];
         for (int x=0;x<map.getWidthInTiles();x++) {

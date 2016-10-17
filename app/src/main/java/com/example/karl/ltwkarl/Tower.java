@@ -1,34 +1,38 @@
 package com.example.karl.ltwkarl;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 /**
  * Created by karl on 14/10/2016.
  */
 
-public class Tower extends GameObject {
-
+public class Tower {
 
     private static final String LOG_TAG = Tower.class.getSimpleName();
 
     private GameSurface gameSurface;
+
+    private int x;
+    private int y;
+
     // This 3 variables are useful for attack
     private double rangeAttack;
     private int ammunition;
     private int damageAttack;
 
+    private String angleWithTarget;
 
     private int towerType; // 0 if just blocking tower 1 if can attack
 
-    public Tower(GameSurface gameSurface, Bitmap image, int towerType,  int x, int y) {
-        super(image, 1, 1, x, y);
+    public Tower(GameSurface gameSurface, int towerType,  int x, int y) {
+        // TODO Bad practice of hardcoding, puting null in a inherited variable etc...
         this.gameSurface = gameSurface;
         this.towerType = towerType;
+        this.x = x;
+        this.y = y;
         // TODO right now range is constant and within a circle around tower
         // Add in constructor for variable range
-        this.rangeAttack = Math.hypot(width, height);
+        this.rangeAttack = Math.hypot(gameSurface.getWIDTH_OBJECT(), gameSurface.getHEIGHT_OBJECT());
         //TODO Same, add constructor for ammunition, right now it's hardcode as 1 ammu per update
         this.ammunition = 1;
         //TODO Same
@@ -36,21 +40,21 @@ public class Tower extends GameObject {
     }
 
     public void setTowerType (int towerType) {
-        // TODO How to deal with the bitmap image? Feel like redunduncy between gamesurface and tower
-        // TODO Implement a better way to deal with it
-        if (towerType == 0) {
-            this.image = BitmapFactory.decodeResource(gameSurface.getResources(), R.drawable.block_basic);
-            this.towerType = towerType;
-        }
-        else if (towerType == 1) {
-            this.image = BitmapFactory.decodeResource(gameSurface.getResources(), R.drawable.block_tower_attack_2);
-            this.towerType = towerType;
-        }
-
+        this.towerType = towerType;
     }
 
     public int getTowerType() {
+
         return towerType;
+    }
+    public int getX()  {
+
+        return this.x;
+    }
+
+    public int getY()  {
+
+        return this.y;
     }
 
     public void update()  {
@@ -68,13 +72,59 @@ public class Tower extends GameObject {
             else if (Math.hypot((chibiCharacter.getX()-x), (chibiCharacter.getY()-y)) <= rangeAttack) {
                 chibiCharacter.setHealthPoint(chibiCharacter.getHealthPoint() - damageAttack);
                 ammunition = ammunition -1;
+                //TODO SET angle with the unit
+                angleWithTarget = Utilities.getAngle((double)chibiCharacter.getX()-x,
+                        (double)chibiCharacter.getY()-y);
+            }
+            else {
+                angleWithTarget = "W";
             }
         }
     }
 
-
-
-    public void draw(Canvas canvas)  {
-        canvas.drawBitmap(this.image, this.x, this.y, null);
+    public void draw(Canvas canvas) {
+        if (towerType == 0) {
+            canvas.drawBitmap(gameSurface.blockTower, this.x, this.y, null);
+        } else {
+            int row = 0;
+            int col = 0;
+            switch (angleWithTarget) {
+                case "N":
+                    row = 1;
+                    col = 1;
+                    break;
+                case "NW":
+                    row = 1;
+                    col = 2;
+                    break;
+                case "W":
+                    row = 1;
+                    col = 3;
+                    break;
+                case "SW":
+                    row = 1;
+                    col = 4;
+                    break;
+                case "S":
+                    row = 2;
+                    col = 1;
+                    break;
+                case "SE":
+                    row = 2;
+                    col = 2;
+                    break;
+                case "E":
+                    row = 2;
+                    col = 3;
+                    break;
+                case "NE":
+                    row = 2;
+                    col = 4;
+                    break;
+            }
+            //TODO Case with attackTower0 get the file in the same format as attackTower1
+            canvas.drawBitmap(gameSurface.attackTower1[row - 1][col - 1], this.x, this.y, null);
+        }
     }
+
 }

@@ -10,12 +10,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.util.ArrayList;
 
+import static com.example.karl.ltwkarl.R.drawable.block_tower;
+import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_0;
+import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_1;
 import static com.example.karl.ltwkarl.R.drawable.chibi1;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
@@ -36,8 +40,12 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private int WIDTH_OBJECT;
     private int HEIGHT_OBJECT;
 
+    //Variable containing every bitmap used during the game
     private Bitmap scaledBackground;
-
+    private Bitmap chibiCharacter;
+    public Bitmap blockTower;
+    public Bitmap[][] attackTower0;
+    public Bitmap[][] attackTower1;
 
     private GameThread gameThread;
 
@@ -98,6 +106,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
+        // Setting this important variable at the init of the surface (will be used by other method)
+        // TODO Find a way to make it possible to use by other phone and not hardcode
+        WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
+        HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
+
         //Create a scalable background
         Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.snow_template1);
         float scale = (float)background.getHeight()/(float)getHeight();
@@ -105,44 +118,58 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         int newHeight = Math.round(background.getHeight()/scale);
         scaledBackground = Bitmap.createScaledBitmap(background, newWidth, newHeight, true);
 
-        Bitmap chibiBitmap1 = BitmapFactory.decodeResource(this.getResources(), chibi1);
-        Bitmap blockBasic1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.block_basic);
-        // Setting this important variable at the init of the surface (will be used by other method)
-        WIDTH_OBJECT = blockBasic1.getWidth();
-        HEIGHT_OBJECT = blockBasic1.getHeight();
+        // Create all the bitmap and scale them
+        chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
+        blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
+        blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
+        Bitmap attackTower0_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_0);
+        Bitmap attackTower1_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_1);
+
+        attackTower0 = new Bitmap[2][4];
+        attackTower1 = new Bitmap[2][4];
+        // CREATE SPRITE FOR tower_attack_0
+        for (int row = 0; row < 2; row++) {
+            for (int column = 0; column < 4; column++) {
+                attackTower0[row][column] = Bitmap.createBitmap(attackTower0_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+                attackTower1[row][column] = Bitmap.createBitmap(attackTower1_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+            }
+        }
+        Log.v(LOG_TAG, "WIDTH OBJECT = " + String.valueOf(WIDTH_OBJECT));
+        Log.v(LOG_TAG, "HEIGHT OBJECT = " + String.valueOf(HEIGHT_OBJECT));
+        Log.v(LOG_TAG, "getHeight() = " + String.valueOf(getHeight()));
+        // CREATE AN INIT MAP
+        // TODO Make it cleaner, more flexible etc.
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 0, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 1, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, blockBasic1, 0, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 0, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 0, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 0, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, blockBasic1, 0, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 0, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 0, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 0, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
         }
         for (int i = 11; i<15; i++) {
-            listTowers.add(new Tower(this, blockBasic1, 0, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
+            listTowers.add(new Tower(this, 0, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
         }
-
 
         // create a possible path grid object and get the list of possible path for the current "round"
         GameMap gameMap = new GameMap(this, listTowers);
         /** The path finder we'll use to search our map */
         finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
-        listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0),
+        listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiCharacter, 0, 0, 0),
                 0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
                 11, 0)
                 .getPossiblePath();
 
-        listChibis.add(new ChibiCharacter(this, chibiBitmap1, 0, 0, 0));
-
-//        Bitmap chibiBitmap2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.chibi2);
-//        listChibis.add(new ChibiCharacter(this, chibiBitmap2, 400, 50));
+        listChibis.add(new ChibiCharacter(this, chibiCharacter, 0, 0, 0));
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -178,10 +205,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             int y = (int)event.getY();
 
             boolean createChibi = true;
-            ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
             for (Tower tower : listTowers) {
-                if ( tower.getX() < x && x < tower.getX() + tower.getWidth()
-                        && tower.getY() < y && y < tower.getY()+ tower.getHeight()) {
+                if ( tower.getX() < x && x < tower.getX() + WIDTH_OBJECT
+                        && tower.getY() < y && y < tower.getY()+ HEIGHT_OBJECT) {
                     // Change the tower type (to attack if block , to block if attack)
                     tower.setTowerType(1-tower.getTowerType());
                     createChibi = false;

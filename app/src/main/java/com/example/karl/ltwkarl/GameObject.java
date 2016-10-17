@@ -10,8 +10,8 @@ public abstract class GameObject {
 
     protected Bitmap image;
 
-    protected final int rowCount;
-    protected final int colCount;
+    protected int rowCount;
+    protected int colCount;
 
     protected final int WIDTH;
     protected final int HEIGHT;
