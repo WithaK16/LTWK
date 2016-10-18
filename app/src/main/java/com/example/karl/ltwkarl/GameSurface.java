@@ -20,6 +20,8 @@ import static com.example.karl.ltwkarl.R.drawable.block_tower;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_1;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_2;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_3;
+import static com.example.karl.ltwkarl.R.drawable.build_your_tower;
+import static com.example.karl.ltwkarl.R.drawable.build_your_tower_locked;
 import static com.example.karl.ltwkarl.R.drawable.chibi1;
 import static com.example.karl.ltwkarl.R.drawable.dollar_img;
 import static com.example.karl.ltwkarl.R.drawable.figures_img;
@@ -55,6 +57,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap dollarSign;
     private Bitmap[] figures = new Bitmap[10];
     private Bitmap lifeLeft;
+    private Bitmap[] buildButton = new Bitmap[2];
 
 
     private GameThread gameThread;
@@ -112,13 +115,17 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         //Drawing background
         canvas.drawBitmap(scaledBackground, 0, 0, null);
 
+
+        //Draw Buttons
+        canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], 1300, 55, null);
         //Draw current gold (power of ten + rest) and life
         //x=1200, y = 50 is arbitrary value
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], 1200, 50, null);
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1200+(WIDTH_OBJECT/2), 50, null);
-        canvas.drawBitmap(dollarSign, 1200+WIDTH_OBJECT, 50, null);
-        canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], 1200+(2*WIDTH_OBJECT), 50, null);
-        canvas.drawBitmap(lifeLeft, 1200+(3*WIDTH_OBJECT), 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], 1500, 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1500+(WIDTH_OBJECT/2), 50, null);
+        canvas.drawBitmap(dollarSign, 1500+WIDTH_OBJECT, 50, null);
+        canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], 1500+(2*WIDTH_OBJECT), 50, null);
+        canvas.drawBitmap(lifeLeft, 1500+(3*WIDTH_OBJECT), 50, null);
+
 
 
         for (Tower tower : listTowers) {
@@ -142,6 +149,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
         HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
 
+
         //Create a player
         this.currentPlayer = new PlayerManager(this);
 
@@ -151,6 +159,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         int newWidth = Math.round(background.getWidth()/scale);
         int newHeight = Math.round(background.getHeight()/scale);
         scaledBackground = Bitmap.createScaledBitmap(background, newWidth, newHeight, true);
+
+        //Create buttons
+        buildButton[1] = BitmapFactory.decodeResource(this.getResources(), build_your_tower); // Button unlock
+        buildButton[0] = BitmapFactory.decodeResource(this.getResources(), build_your_tower_locked); // Button lock
 
         // init figures_img and dollar_img sign
         dollarSign = BitmapFactory.decodeResource(this.getResources(), dollar_img);

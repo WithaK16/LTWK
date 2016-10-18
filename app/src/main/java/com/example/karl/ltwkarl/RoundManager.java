@@ -40,13 +40,23 @@ public class RoundManager {
                 listChibis.add(new ChibiCharacter(gameSurface, gameSurface.chibiCharacter, 0, 0, 0));
                 numberOfChibisLeft -= 1;
             }
-            else {
+            else if (listChibis.size() == 0) {
                 isRoundFinish = true;
             }
             totalDurationMs = 0;
         }
         else {
             updateTime = System.currentTimeMillis();
+        }
+    }
+
+    //This function return 1 if round finished, 0 else (use for button)
+    public int isRoundFinished() {
+        if (isRoundFinish) {
+            return 1;
+        }
+        else {
+            return 0;
         }
     }
 
