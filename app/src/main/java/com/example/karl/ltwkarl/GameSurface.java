@@ -46,6 +46,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     /** The last path found for the current unit */
     private ArrayList<Point> listPossiblePath = new ArrayList();
 
+    private int xGridArrival;
+    private int yGridArrival;
+
     // These variable contain width and height of all object (use for calculating the grid etc.)
     private int WIDTH_OBJECT;
     private int HEIGHT_OBJECT;
@@ -60,6 +63,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap dollarSign;
     private Bitmap[] figures = new Bitmap[10];
     private Bitmap lifeLeft;
+    private Bitmap deadZone;
     private Bitmap[] buildButton = new Bitmap[2];
 
     //Variable for button, gold and life coordinate
@@ -145,11 +149,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], xButtonBuild, yButtonBuild + 5, null);
         //Draw current gold (power of ten + rest) and life
         //x=1200, y = 50 is arbitrary value
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], xButtonBuild+200, yButtonBuild, null);
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1500+(WIDTH_OBJECT/2), yButtonBuild, null);
+        int goldPlayer = Math.max(currentPlayer.getGoldPlayer(), 0); // this to manage display for the chibi trick when dead
+        canvas.drawBitmap(figures[goldPlayer / 10], xButtonBuild+200, yButtonBuild, null);
+        canvas.drawBitmap(figures[goldPlayer % 10], 1500+(WIDTH_OBJECT/2), yButtonBuild, null);
         canvas.drawBitmap(dollarSign, xButtonBuild+200+WIDTH_OBJECT, yButtonBuild, null);
         canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], xButtonBuild+200+(2*WIDTH_OBJECT), yButtonBuild, null);
         canvas.drawBitmap(lifeLeft, xButtonBuild+200+(3*WIDTH_OBJECT), yButtonBuild, null);
+
+        canvas.drawBitmap(deadZone, xGridArrival*WIDTH_OBJECT, yGridArrival*HEIGHT_OBJECT, null);
 
 
         for (Tower tower : listTowers) {
@@ -194,8 +201,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             figures[i] = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), figures_img),
                     i*WIDTH_OBJECT, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
         }
-        //init heart icon
+        //init heart & dead zone icon
         lifeLeft = BitmapFactory.decodeResource(getResources(), R.drawable.heart_img);
+        deadZone = BitmapFactory.decodeResource(getResources(), R.drawable.dead_zone_img);
 
         // Create all the bitmap and scale them
         chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
@@ -221,16 +229,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        // create a possible path grid object and get the list of possible path for the current "round"
-        GameMap gameMap = new GameMap(this, listTowers);
-        /** The path finder we'll use to search our map */
-        finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
-        listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiCharacter, 0, 0, 0),
-                0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
-                11, 0)
-                .getPossiblePath();
-
         this.currentRound = new RoundManager(this, 0);
+        xGridArrival = (getWidth() / WIDTH_OBJECT) - 1;
+        yGridArrival = getHeight() / (HEIGHT_OBJECT*2);
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -281,11 +282,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                             gameMap = new GameMap(this, listTowers);
                             /** The path finder we'll use to search our map */
                             finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
+
                             listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiCharacter, 0, 0, 0),
                                     0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
-                                    (getWidth() / WIDTH_OBJECT) - 1, getHeight() / (HEIGHT_OBJECT*2) )
+                                    xGridArrival, yGridArrival)
                                     .getPossiblePath();
-                            Log.v(LOG_TAG, "I clicked on Build" + String.valueOf(getHeight() / HEIGHT_OBJECT));
                         }
                         return true;
                     }
@@ -354,6 +355,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
     public ArrayList<ChibiCharacter> getListChibis() {
         return listChibis;
+    }
+
+    public int getxGridArrival() {
+        return xGridArrival;
+    }
+
+    public int getyGridArrival() {
+        return yGridArrival;
     }
 
     public int getWIDTH_OBJECT() {

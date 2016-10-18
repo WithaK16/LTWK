@@ -33,8 +33,6 @@ public class RoundManager {
         }
     }
 
-
-
     public void update() {
         //Add a chibi every 50 ms
         totalDurationMs += System.currentTimeMillis() - updateTime;

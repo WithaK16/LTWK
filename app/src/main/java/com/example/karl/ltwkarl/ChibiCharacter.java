@@ -57,6 +57,7 @@ public class ChibiCharacter extends GameObject implements Mover {
     private ArrayList<Point> listPossiblePath;
 
 
+
     public ChibiCharacter(GameSurface gameSurface, Bitmap image, int unitType,  int x, int y) {
         super(image, 4, 3, x, y);
 
@@ -133,11 +134,19 @@ public class ChibiCharacter extends GameObject implements Mover {
         if(lastDrawNanoTime==-1) {
             lastDrawNanoTime= now;
         }
-        // Change nanoseconds to milliseconds (1 nanosecond = 1000000 milliseconds).
-        int deltaTime = (int) ((now - lastDrawNanoTime)/ 1000000 );
 
         xGrid = getXGrid(x);
         yGrid = getYGrid(y);
+
+        if (xGrid == gameSurface.getxGridArrival() && yGrid == gameSurface.getyGridArrival() && healthPoint > 0)
+        {
+            PlayerManager currentPlayer = gameSurface.getCurrentPlayer();
+            healthPoint = 0;
+            currentPlayer.removeLife(1); // TODO maybe stop hardcode because some creature do more dmg
+            // Little trick here, because when a chibi is kill it generate Gold !!
+            currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer()-1); //TODO Change this trick into a more robust function
+        }
+
 
         Point pointGrid = new Point(xGrid, yGrid);
 
@@ -178,22 +187,22 @@ public class ChibiCharacter extends GameObject implements Mover {
 
 
         // When the game's character touches the edge of the screen, then change direction
-
-        if(this.x < 0 )  {
-            this.x = 0;
-            this.movingVectorX = - this.movingVectorX;
-        } else if(this.x > this.gameSurface.getWidth() - width)  {
-            this.x = this.gameSurface.getWidth() - width;
-            this.movingVectorX = - this.movingVectorX;
-        }
-
-        if(this.y < 0 )  {
-            this.y = 0;
-            this.movingVectorY = - this.movingVectorY;
-        } else if(this.y > this.gameSurface.getHeight() - height)  {
-            this.y= this.gameSurface.getHeight() - height;
-            this.movingVectorY = - this.movingVectorY ;
-        }
+        //TODO I let this as an example but it's not useful anymore with shortest Path
+//        if(this.x < 0 )  {
+//            this.x = 0;
+//            this.movingVectorX = - this.movingVectorX;
+//        } else if(this.x > this.gameSurface.getWidth() - width)  {
+//            this.x = this.gameSurface.getWidth() - width;
+//            this.movingVectorX = - this.movingVectorX;
+//        }
+//
+//        if(this.y < 0 )  {
+//            this.y = 0;
+//            this.movingVectorY = - this.movingVectorY;
+//        } else if(this.y > this.gameSurface.getHeight() - height)  {
+//            this.y= this.gameSurface.getHeight() - height;
+//            this.movingVectorY = - this.movingVectorY ;
+//        }
 
         // rowUsing
         if( movingVectorX > 0 )  {
@@ -228,9 +237,11 @@ public class ChibiCharacter extends GameObject implements Mover {
     }
 
     public int getXGrid(int x) {
+
         return x / width;
     }
     public int getYGrid(int y) {
+
         return y / height;
     }
 }

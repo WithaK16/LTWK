@@ -26,6 +26,10 @@ public class PlayerManager {
         this.lifeLeft = lifeLeft;
     }
 
+    public void removeLife(int damage) {
+        lifeLeft = Math.max(lifeLeft - damage, 0);
+    }
+
     public int getGoldPlayer() {
         return goldPlayer;
     }
