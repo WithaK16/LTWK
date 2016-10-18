@@ -18,7 +18,7 @@ public class RoundManager {
     private long updateTime;
 
 
-
+    //Round manager general case
     public RoundManager(GameSurface gameSurface, int numberOfChibis) {
 
         this.isRoundFinish = false;
@@ -27,10 +27,13 @@ public class RoundManager {
         this.listChibis = gameSurface.getListChibis();
         this.totalDurationMs = 0;
         this.updateTime = System.currentTimeMillis();
-
         // Add the first chibi to launch the game
-        listChibis.add(new ChibiCharacter(gameSurface, gameSurface.chibiCharacter, 0, 0, 0));
+        if (numberOfChibis == 0) {
+            this.isRoundFinish = true;  // Case where numberOfChibis = 0 (first initial round)
+        }
     }
+
+
 
     public void update() {
         //Add a chibi every 50 ms

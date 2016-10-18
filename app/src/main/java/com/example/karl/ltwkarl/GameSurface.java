@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -39,6 +40,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private PlayerManager currentPlayer;
 
 
+    private GameMap gameMap;
     /** The path finder we'll use to search our map */
     private PathFinder finder;
     /** The last path found for the current unit */
@@ -59,6 +61,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap[] figures = new Bitmap[10];
     private Bitmap lifeLeft;
     private Bitmap[] buildButton = new Bitmap[2];
+
+    //Variable for button, gold and life coordinate
+    private final int xButtonBuild = 1300;
+    private final int yButtonBuild = 50;
 
     // This is useful for long click management
     private boolean longClickFlag = false;
@@ -92,6 +98,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     public void update()  {
 
+
         // First update the current round
         currentRound.update();
 
@@ -123,6 +130,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         for (Explosion explosion : listExplosions) {
             explosion.update();
         }
+
+
     }
 
     @Override
@@ -133,15 +142,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
         //Draw Buttons
-        canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], 1300, 55, null);
+        canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], xButtonBuild, yButtonBuild + 5, null);
         //Draw current gold (power of ten + rest) and life
         //x=1200, y = 50 is arbitrary value
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], 1500, 50, null);
-        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1500+(WIDTH_OBJECT/2), 50, null);
-        canvas.drawBitmap(dollarSign, 1500+WIDTH_OBJECT, 50, null);
-        canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], 1500+(2*WIDTH_OBJECT), 50, null);
-        canvas.drawBitmap(lifeLeft, 1500+(3*WIDTH_OBJECT), 50, null);
-
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() / 10], xButtonBuild+200, yButtonBuild, null);
+        canvas.drawBitmap(figures[currentPlayer.getGoldPlayer() % 10], 1500+(WIDTH_OBJECT/2), yButtonBuild, null);
+        canvas.drawBitmap(dollarSign, xButtonBuild+200+WIDTH_OBJECT, yButtonBuild, null);
+        canvas.drawBitmap(figures[currentPlayer.getLifeLeft()], xButtonBuild+200+(2*WIDTH_OBJECT), yButtonBuild, null);
+        canvas.drawBitmap(lifeLeft, xButtonBuild+200+(3*WIDTH_OBJECT), yButtonBuild, null);
 
 
         for (Tower tower : listTowers) {
@@ -213,27 +221,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        // CREATE AN INIT MAP
-        // TODO Make it cleaner, more flexible etc.
-        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, 1, 2*WIDTH_OBJECT, i*HEIGHT_OBJECT));
-        }
-        for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, 2, 4*WIDTH_OBJECT, i*HEIGHT_OBJECT));
-        }
-        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, 3, 6*WIDTH_OBJECT, i*HEIGHT_OBJECT));
-        }
-        for (int i = getHeight()/HEIGHT_OBJECT-1; i > 0; i--) {
-            listTowers.add(new Tower(this, 0, 8*WIDTH_OBJECT, i*HEIGHT_OBJECT));
-        }
-        for (int i = 0; i<getHeight()/HEIGHT_OBJECT-1; i++) {
-            listTowers.add(new Tower(this, 0, 10*WIDTH_OBJECT, i*HEIGHT_OBJECT));
-        }
-        for (int i = 11; i<15; i++) {
-            listTowers.add(new Tower(this, 0, i*WIDTH_OBJECT, 7*HEIGHT_OBJECT));
-        }
-
         // create a possible path grid object and get the list of possible path for the current "round"
         GameMap gameMap = new GameMap(this, listTowers);
         /** The path finder we'll use to search our map */
@@ -243,7 +230,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                 11, 0)
                 .getPossiblePath();
 
-        this.currentRound = new RoundManager(this, 20);
+        this.currentRound = new RoundManager(this, 0);
 
         this.gameThread = new GameThread(this, holder);
         this.gameThread.setRunning(true);
@@ -272,42 +259,94 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    //TODO Divide this function in smaller part (case round finish case round not finish)
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                initialTouchX = (int)event.getX();
-                initialTouchY = (int)event.getY();
-                handler.postDelayed(mLongPressed, 1000);
-                break;
-            case MotionEvent.ACTION_UP:
-                handler.removeCallbacks(mLongPressed);
-                // CODE FOR SINGLE CLICK HERE
-                if(!longClickFlag) {
+        //Click handling between round (= construction time)
+        if (currentRound.isRoundFinished() == 1) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    initialTouchX = (int) event.getX();
+                    initialTouchY = (int) event.getY();
+
+                    // condition to make it impossible to build on menu and new round if you click on Build
+                    if ((getWidth() - 7*WIDTH_OBJECT) < initialTouchX && initialTouchY < 2 * HEIGHT_OBJECT) {
+                        if (xButtonBuild < initialTouchX && initialTouchX < xButtonBuild + buildButton[0].getWidth()
+                                && yButtonBuild+5 < initialTouchY && initialTouchY < yButtonBuild+5 + buildButton[0].getHeight())
+                        {
+                            Log.v(LOG_TAG, "I clicked on Build");
+                            currentRound = new RoundManager(this, 5);
+                            // create a possible path grid object and get the list of possible path for the current "round"
+                            gameMap = new GameMap(this, listTowers);
+                            /** The path finder we'll use to search our map */
+                            finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
+                            listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiCharacter, 0, 0, 0),
+                                    0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
+                                    (getWidth() / WIDTH_OBJECT) - 1, getHeight() / (HEIGHT_OBJECT*2) )
+                                    .getPossiblePath();
+                            Log.v(LOG_TAG, "I clicked on Build" + String.valueOf(getHeight() / HEIGHT_OBJECT));
+                        }
+                        return true;
+                    }
+                    // if click on tower, upgrade tower
                     for (Tower tower : listTowers) {
-                        if ( tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
-                                && tower.getY() < initialTouchY && initialTouchY < tower.getY()+ HEIGHT_OBJECT) {
-                            // UpgradetowerType
+                        if (tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
+                                && tower.getY() < initialTouchY && initialTouchY < tower.getY() + HEIGHT_OBJECT) {
+                            // TODO Print an error message saying that it is impossible to build on existing tower
                             tower.upgradeTowerType();
+                            return true; // TODO I don't know what these return value are used for, I only use them to get out of the function..
                         }
                     }
-                    return false;
-                } // CODE FOR LONG CLICK HERE (longclickFlag is true)
-                else {
-                    for (Tower tower : listTowers) {
-                        if ( tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
-                                && tower.getY() < initialTouchY && initialTouchY < tower.getY()+ HEIGHT_OBJECT) {
-                            // UpgradetowerType
-                            tower.downgradeTowerType();
-                        }
+                    // if no tower touched, add a block
+                    if (currentPlayer.getGoldPlayer() >= 1) { //TODO Stop hardcoding these value (2 = price of block)
+                        int gridX = initialTouchX / WIDTH_OBJECT;
+                        int gridY = initialTouchY / HEIGHT_OBJECT;
+                        listTowers.add(new Tower(this, 0, gridX*WIDTH_OBJECT, gridY*HEIGHT_OBJECT));
+                        currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - 1) ; // TODO stop hardcoding
                     }
-                    longClickFlag = false;
-                }
-                break;
+                    break;
+            }
+
+        }
+        else if (currentRound.isRoundFinished() == 0) {
+            //Click handling in round (= possible upgrade time)
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    initialTouchX = (int) event.getX();
+                    initialTouchY = (int) event.getY();
+                    handler.postDelayed(mLongPressed, 1000);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    handler.removeCallbacks(mLongPressed);
+                    // CODE FOR SINGLE CLICK HERE
+                    if (!longClickFlag) {
+                        for (Tower tower : listTowers) {
+                            if (tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
+                                    && tower.getY() < initialTouchY && initialTouchY < tower.getY() + HEIGHT_OBJECT) {
+                                // UpgradetowerType
+                                tower.upgradeTowerType();
+                            }
+                        }
+                        return false;
+                    } // CODE FOR LONG CLICK HERE (longclickFlag is true)
+                    else {
+                        for (Tower tower : listTowers) {
+                            if (tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
+                                    && tower.getY() < initialTouchY && initialTouchY < tower.getY() + HEIGHT_OBJECT) {
+                                // UpgradetowerType
+                                tower.downgradeTowerType();
+                            }
+                        }
+                        longClickFlag = false;
+                    }
+                    break;
+            }
         }
         return true;
     }
+
+
 
     public ArrayList getListPossiblePath() {
 

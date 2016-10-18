@@ -20,7 +20,7 @@ public class Tower {
     private int ammunition;
     private int damageAttack;
 
-    private String angleWithTarget;
+    private String angleWithTarget = "W";
 
     private int costTower;
 
@@ -54,6 +54,7 @@ public class Tower {
 
 
     //TODO add upgrading characteristic in setTowerType function
+    //TODO A different way of interaction during construction time?
     public void upgradeTowerType () {
         PlayerManager currentPlayer = gameSurface.getCurrentPlayer();
         switch (towerType) {
@@ -67,15 +68,14 @@ public class Tower {
                 costTower = 8;
                 break;
         }
-        if (currentPlayer.getGoldPlayer() - costTower >= 0 && towerType < 3){
+        if (currentPlayer.getGoldPlayer() - costTower >= 0 && towerType < 3) {
             currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - costTower);
             setTowerType(towerType + 1);
-        }
-        else {
+        } else {
             // TODO Display error message if not enough gold or max level
         }
     }
-    //TODO stop hardocing cost tower (same in upgrade)
+    //TODO stop hardcoding cost tower (same in upgrade)
     //TODO maybe destroy tower?
     //down grade tower type to block type
     public void downgradeTowerType() {
@@ -109,33 +109,36 @@ public class Tower {
         return this.y;
     }
 
+    //TODO Differentiate between tower that can attack or not (to not loop on block)
     public void update()  {
 
         if (towerType == 0){
             return;
+        } else {
+            ammunition = 1; //TODO I'm sure there is a better way to do that (ammunition max etc)
+            for (ChibiCharacter chibiCharacter : gameSurface.getListChibis()) {
+                if (ammunition == 0) {
+                    break; // stop looking for chibi if no more ammunition
+                }
+                // else if chibis is in range then attack
+                else if (Math.hypot((chibiCharacter.getX()-x), (chibiCharacter.getY()-y)) <= rangeAttack) {
+                    chibiCharacter.setHealthPoint(chibiCharacter.getHealthPoint() - damageAttack);
+                    ammunition = ammunition -1;
+                    angleWithTarget = Utilities.getAngle((double)chibiCharacter.getX()-x,
+                            (double)chibiCharacter.getY()-y);
+                }
+                else {
+                    angleWithTarget = "W";
+                }
+            }
+            return;
         }
-        //TODO Differentiate between tower that can attack or not (to not loop on block)
-        ammunition = 1; //TODO I'm sure there is a better way to do that
-        for (ChibiCharacter chibiCharacter : gameSurface.getListChibis()) {
-            if (ammunition == 0) {
-                break; // stop looking for chibi if no more ammunition
-            }
-            // else if chibis is in range then attack
-            else if (Math.hypot((chibiCharacter.getX()-x), (chibiCharacter.getY()-y)) <= rangeAttack) {
-                chibiCharacter.setHealthPoint(chibiCharacter.getHealthPoint() - damageAttack);
-                ammunition = ammunition -1;
-                angleWithTarget = Utilities.getAngle((double)chibiCharacter.getX()-x,
-                        (double)chibiCharacter.getY()-y);
-            }
-            else {
-                angleWithTarget = "W";
-            }
-        }
+
+
     }
 
     public void draw(Canvas canvas) {
         // If towertype == 0 then it's fix, then no need to calculate
-
         if (towerType == 0) {
             canvas.drawBitmap(gameSurface.blockTower, this.x, this.y, null);
         } else {
@@ -173,6 +176,10 @@ public class Tower {
                 case "NE":
                     row = 1;
                     col = 3;
+                    break;
+                default:
+                    row = 0;
+                    col = 2;
                     break;
             }
             if (towerType == 1) {

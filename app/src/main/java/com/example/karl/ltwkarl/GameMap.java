@@ -1,7 +1,5 @@
 package com.example.karl.ltwkarl;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 /**
@@ -48,10 +46,6 @@ public class GameMap implements TileBasedMap {
         this.terrain = new int[WIDTH_GRID][HEIGHT_GRID];
         this.units = new int[WIDTH_GRID][HEIGHT_GRID];
         this.visited = new boolean[WIDTH_GRID][HEIGHT_GRID];
-
-        // DEBUG TODO enlever
-        Log.v(LOG_TAG, "WIDTH GRID GAMEMAP " + String.valueOf(WIDTH_GRID));
-        Log.v(LOG_TAG, "HEIGHT GRID GAMEMAP " + String.valueOf(HEIGHT_GRID));
 
         fillArea(0, 0,
                 WIDTH_GRID, HEIGHT_GRID,
