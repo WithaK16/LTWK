@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -59,6 +60,13 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap lifeLeft;
     private Bitmap[] buildButton = new Bitmap[2];
 
+    // This is useful for long click management
+    private boolean longClickFlag = false;
+    private final Handler handler;
+    private Runnable mLongPressed;
+    private int initialTouchX;
+    private int initialTouchY;
+
 
     private GameThread gameThread;
 
@@ -72,6 +80,14 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         //this.setZOrderOnTop(true);
         this.getHolder().setFormat(PixelFormat.TRANSPARENT);
+
+        handler = new Handler();
+        mLongPressed = new Runnable() {
+            public void run() {
+                longClickFlag = true;
+            }
+        };
+
     }
 
     public void update()  {
@@ -258,26 +274,39 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            int x = (int)event.getX();
-            int y = (int)event.getY();
 
-            boolean createChibi = true;
-            for (Tower tower : listTowers) {
-                if ( tower.getX() < x && x < tower.getX() + WIDTH_OBJECT
-                        && tower.getY() < y && y < tower.getY()+ HEIGHT_OBJECT) {
-                    // Change the tower type (to attack if block , to block if attack)
-                    tower.upgradeTowerType();
-                    createChibi = false;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                initialTouchX = (int)event.getX();
+                initialTouchY = (int)event.getY();
+                handler.postDelayed(mLongPressed, 1000);
+                break;
+            case MotionEvent.ACTION_UP:
+                handler.removeCallbacks(mLongPressed);
+                // CODE FOR SINGLE CLICK HERE
+                if(!longClickFlag) {
+                    for (Tower tower : listTowers) {
+                        if ( tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
+                                && tower.getY() < initialTouchY && initialTouchY < tower.getY()+ HEIGHT_OBJECT) {
+                            // UpgradetowerType
+                            tower.upgradeTowerType();
+                        }
+                    }
+                    return false;
+                } // CODE FOR LONG CLICK HERE (longclickFlag is true)
+                else {
+                    for (Tower tower : listTowers) {
+                        if ( tower.getX() < initialTouchX && initialTouchX < tower.getX() + WIDTH_OBJECT
+                                && tower.getY() < initialTouchY && initialTouchY < tower.getY()+ HEIGHT_OBJECT) {
+                            // UpgradetowerType
+                            tower.downgradeTowerType();
+                        }
+                    }
+                    longClickFlag = false;
                 }
-            }
-
-            if (createChibi) {
-                listChibis.add(new ChibiCharacter(this, chibiCharacter, 0, 0, 0));
-            }
-            return true;
+                break;
         }
-        return false;
+        return true;
     }
 
     public ArrayList getListPossiblePath() {
@@ -293,6 +322,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
     public int getHEIGHT_OBJECT() {
         return HEIGHT_OBJECT;
+    }
+
+    public PlayerManager getCurrentPlayer() {
+        return currentPlayer;
     }
 
 

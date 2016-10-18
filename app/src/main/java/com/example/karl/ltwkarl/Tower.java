@@ -22,6 +22,8 @@ public class Tower {
 
     private String angleWithTarget;
 
+    private int costTower;
+
     private int towerType; // 0 if just blocking tower 1 if can attack
 
     public Tower(GameSurface gameSurface, int towerType,  int x, int y) {
@@ -39,7 +41,9 @@ public class Tower {
         this.damageAttack = 2;
     }
 
+    // TODO add upgrading charachteristic in this function
     public void setTowerType (int towerType) {
+
         this.towerType = towerType;
     }
 
@@ -47,14 +51,54 @@ public class Tower {
 
         return towerType;
     }
+
+
+    //TODO add upgrading characteristic in setTowerType function
     public void upgradeTowerType () {
-        if (towerType == 3) {
-            towerType = 0;
+        PlayerManager currentPlayer = gameSurface.getCurrentPlayer();
+        switch (towerType) {
+            case 0:
+                costTower = 2;
+                break;
+            case 1:
+                costTower = 4;
+                break;
+            case 2:
+                costTower = 8;
+                break;
+        }
+        if (currentPlayer.getGoldPlayer() - costTower >= 0 && towerType < 3){
+            currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - costTower);
+            setTowerType(towerType + 1);
         }
         else {
-            towerType += 1;
+            // TODO Display error message if not enough gold or max level
         }
     }
+    //TODO stop hardocing cost tower (same in upgrade)
+    //TODO maybe destroy tower?
+    //down grade tower type to block type
+    public void downgradeTowerType() {
+        if (towerType > 0) {
+            switch (towerType) {
+                case 1:
+                    costTower = -1;
+                    break;
+                case 2:
+                    costTower = -3;
+                    break;
+                case 3:
+                    costTower = -6;
+                    break;
+            }
+            PlayerManager currentPlayer = gameSurface.getCurrentPlayer();
+
+            // If gold after sell is > 99, put 99
+            currentPlayer.setGoldPlayer(Math.min(currentPlayer.getGoldPlayer() - costTower, 99));
+            setTowerType(0);
+        }
+    }
+
     public int getX()  {
 
         return this.x;
