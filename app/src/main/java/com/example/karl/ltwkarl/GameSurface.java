@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,6 +28,8 @@ import static com.example.karl.ltwkarl.R.drawable.build_your_tower_locked;
 import static com.example.karl.ltwkarl.R.drawable.chibi1;
 import static com.example.karl.ltwkarl.R.drawable.dollar_img;
 import static com.example.karl.ltwkarl.R.drawable.figures_img;
+import static com.example.karl.ltwkarl.R.drawable.impossible_transparent;
+import static com.example.karl.ltwkarl.R.drawable.possible_transparent;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -38,7 +41,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
     private RoundManager currentRound;
     private PlayerManager currentPlayer;
+    private PossibleConstructionGrid possibleConstructionGrid;
 
+    private boolean needToCreatePossibleConstructionGrid;
+    private int triggerNewTower; // this variable count the number of tower at each update to trigger the need of create a new possible construction grid
 
     private GameMap gameMap;
     /** The path finder we'll use to search our map */
@@ -65,6 +71,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap lifeLeft;
     private Bitmap deadZone;
     private Bitmap[] buildButton = new Bitmap[2];
+    public Bitmap[] possibleConstruction = new Bitmap[2];
 
     //Variable for button, gold and life coordinate
     private final int xButtonBuild = 1300;
@@ -106,6 +113,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         // First update the current round
         currentRound.update();
 
+        if (listTowers.size() != triggerNewTower) {
+            needToCreatePossibleConstructionGrid = true;
+        }
+
+        //TODO create a trigger to put need to create possible construction grid on true when new tower
+        if (currentRound.isRoundFinished() == 1 && needToCreatePossibleConstructionGrid) {
+            possibleConstructionGrid = new PossibleConstructionGrid(this);
+            needToCreatePossibleConstructionGrid = false;
+        }
         //update the tower
         for (Tower tower : listTowers) {
             tower.update();
@@ -134,8 +150,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         for (Explosion explosion : listExplosions) {
             explosion.update();
         }
-
-
+        triggerNewTower = listTowers.size();
     }
 
     @Override
@@ -158,6 +173,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         canvas.drawBitmap(deadZone, xGridArrival*WIDTH_OBJECT, yGridArrival*HEIGHT_OBJECT, null);
 
+
+        if (currentRound.isRoundFinished() == 1) {
+            possibleConstructionGrid.draw(canvas);
+        }
 
         for (Tower tower : listTowers) {
             tower.draw(canvas);
@@ -195,6 +214,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         buildButton[1] = BitmapFactory.decodeResource(this.getResources(), build_your_tower); // Button unlock
         buildButton[0] = BitmapFactory.decodeResource(this.getResources(), build_your_tower_locked); // Button lock
 
+        //Create possible/impossible img
+        possibleConstruction[1] = BitmapFactory.decodeResource(this.getResources(), impossible_transparent); // Button unlock
+        possibleConstruction[0] = BitmapFactory.decodeResource(this.getResources(), possible_transparent); // Button lock
+        this.needToCreatePossibleConstructionGrid = true;
         // init figures_img and dollar_img sign
         dollarSign = BitmapFactory.decodeResource(this.getResources(), dollar_img);
         for(int i=0; i<10; i++){
@@ -271,7 +294,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                     initialTouchX = (int) event.getX();
                     initialTouchY = (int) event.getY();
 
-                    // condition to make it impossible to build on menu and new round if you click on Build
+                    // condition to make it impossible to build on menu
+                    // Create a new round if you click on Build
                     if ((getWidth() - 7*WIDTH_OBJECT) < initialTouchX && initialTouchY < 2 * HEIGHT_OBJECT) {
                         if (xButtonBuild < initialTouchX && initialTouchX < xButtonBuild + buildButton[0].getWidth()
                                 && yButtonBuild+5 < initialTouchY && initialTouchY < yButtonBuild+5 + buildButton[0].getHeight())
@@ -282,11 +306,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                             gameMap = new GameMap(this, listTowers);
                             /** The path finder we'll use to search our map */
                             finder = new AStarPathFinder(gameMap, 500, false, new ClosestHeuristic());
-
-                            listPossiblePath = finder.findPath(new ChibiCharacter(this, chibiCharacter, 0, 0, 0),
+                            listPossiblePath = finder.findPath(null,
                                     0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
                                     xGridArrival, yGridArrival)
                                     .getPossiblePath();
+
                         }
                         return true;
                     }
@@ -303,8 +327,13 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (currentPlayer.getGoldPlayer() >= 1) { //TODO Stop hardcoding these value (2 = price of block)
                         int gridX = initialTouchX / WIDTH_OBJECT;
                         int gridY = initialTouchY / HEIGHT_OBJECT;
-                        listTowers.add(new Tower(this, 0, gridX*WIDTH_OBJECT, gridY*HEIGHT_OBJECT));
-                        currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - 1) ; // TODO stop hardcoding
+                        if (possibleConstructionGrid.getPossibleGrid()[gridX][gridY] != 0) {
+                            Toast.makeText(getContext(), "Impossible to build here", Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            listTowers.add(new Tower(this, 0, gridX * WIDTH_OBJECT, gridY * HEIGHT_OBJECT));
+                            currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - 1); // TODO stop hardcoding
+                        }
                     }
                     break;
             }
@@ -356,6 +385,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public ArrayList<ChibiCharacter> getListChibis() {
         return listChibis;
     }
+
+    public ArrayList<Tower> getListTowers() { return listTowers; }
 
     public int getxGridArrival() {
         return xGridArrival;

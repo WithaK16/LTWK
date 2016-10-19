@@ -68,7 +68,7 @@ public class GameMap implements TileBasedMap {
      * @param height The height of the area to fill
      * @param type The terrain type to fill with
      */
-    private void fillArea(int x, int y, int width, int height, int type) {
+    public void fillArea(int x, int y, int width, int height, int type) {
         for (int xp=x;xp<x+width;xp++) {
             for (int yp=y;yp<y+height;yp++) {
                 terrain[xp][yp] = type;
@@ -140,7 +140,7 @@ public class GameMap implements TileBasedMap {
 //            return true;
 //        }
 
-        int unit = ((ChibiCharacter) mover).getUnitType();
+//        int unit = ((ChibiCharacter) mover).getUnitType();
 
         // For now, every chibis can move everywhere and are not blocked by other chibi
 
