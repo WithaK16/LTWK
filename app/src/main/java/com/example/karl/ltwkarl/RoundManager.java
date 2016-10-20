@@ -15,28 +15,36 @@ public class RoundManager {
     private ArrayList<ChibiCharacter> listChibis;
     private int numberOfChibisLeft;
     private long totalDurationMs;
-    private long updateTime;
+    // Inverse of frequency of apparation
+    private double periodRespawn;
+    private double updateTime;
+
 
 
     //Round manager general case
-    public RoundManager(GameSurface gameSurface, int numberOfChibis) {
+    public RoundManager(GameSurface gameSurface, int roundLevel) {
 
         this.isRoundFinish = false;
         this.gameSurface = gameSurface;
-        this.numberOfChibisLeft = numberOfChibis;
+        // A round currently consist of 2 times round level of chibis
+        this.numberOfChibisLeft = roundLevel * 2;
         this.listChibis = gameSurface.getListChibis();
         this.totalDurationMs = 0;
         this.updateTime = System.currentTimeMillis();
+        this.periodRespawn = 5000 / (double)roundLevel;
         // Add the first chibi to launch the game
-        if (numberOfChibis == 0) {
+        if (roundLevel == 0) {
             this.isRoundFinish = true;  // Case where numberOfChibis = 0 (first initial round)
+        }
+        else {
+            listChibis.add(new ChibiCharacter(gameSurface, gameSurface.chibiCharacter, 0, 0, 0));
         }
     }
 
     public void update() {
         //Add a chibi every 50 ms
         totalDurationMs += System.currentTimeMillis() - updateTime;
-        if (totalDurationMs >= 5000) {
+        if (totalDurationMs >= periodRespawn) {
             if (numberOfChibisLeft > 0) {
                 listChibis.add(new ChibiCharacter(gameSurface, gameSurface.chibiCharacter, 0, 0, 0));
                 numberOfChibisLeft -= 1;

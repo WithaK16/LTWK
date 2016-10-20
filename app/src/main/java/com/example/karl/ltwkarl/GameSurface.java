@@ -11,7 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Handler;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -40,6 +39,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
     private RoundManager currentRound;
+    private int currentRoundLevel;
     private PlayerManager currentPlayer;
     private PossibleConstructionGrid possibleConstructionGrid;
 
@@ -62,6 +62,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     //Variable containing every bitmap used during the game
     private Bitmap scaledBackground;
     public Bitmap chibiCharacter;
+    public Bitmap explosionBitmap;
     public Bitmap blockTower;
     public Bitmap[][] attackTower1;
     public Bitmap[][] attackTower2;
@@ -135,8 +136,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             if (chibi.getHealthPoint() <= 0) {
                 chibiToKill.add(chibi);
                 // Create Explosion object.
-                Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.explosion);
-                Explosion explosion = new Explosion(this, bitmap,chibi.getX(),chibi.getY());
+                Explosion explosion = new Explosion(this, explosionBitmap,chibi.getX(),chibi.getY());
                 this.listExplosions.add(explosion);
             }
             chibi.update();
@@ -226,9 +226,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
         //init heart & dead zone icon
         lifeLeft = BitmapFactory.decodeResource(getResources(), R.drawable.heart_img);
-        deadZone = BitmapFactory.decodeResource(getResources(), R.drawable.dead_zone_img);
+        deadZone = BitmapFactory.decodeResource(getResources(), R.drawable.castle32_img);
 
         // Create all the bitmap and scale them
+        explosionBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion);
         chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
         blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
         blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
@@ -251,8 +252,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                         column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
             }
         }
-
-        this.currentRound = new RoundManager(this, 0);
+        currentRoundLevel = 0;
+        this.currentRound = new RoundManager(this, currentRoundLevel);
         xGridArrival = (getWidth() / WIDTH_OBJECT) - 1;
         yGridArrival = getHeight() / (HEIGHT_OBJECT*2);
 
@@ -300,8 +301,6 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                         if (xButtonBuild < initialTouchX && initialTouchX < xButtonBuild + buildButton[0].getWidth()
                                 && yButtonBuild+5 < initialTouchY && initialTouchY < yButtonBuild+5 + buildButton[0].getHeight())
                         {
-                            Log.v(LOG_TAG, "I clicked on Build");
-                            currentRound = new RoundManager(this, 5);
                             // create a possible path grid object and get the list of possible path for the current "round"
                             gameMap = new GameMap(this, listTowers);
                             /** The path finder we'll use to search our map */
@@ -310,6 +309,9 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                                     0, 0,  // TODO STOP HARDCODING, THIS IS DEPARTURE AND ARRIVAL
                                     xGridArrival, yGridArrival)
                                     .getPossiblePath();
+                            currentRoundLevel += 1;
+                            currentRound = new RoundManager(this, currentRoundLevel);
+                            Toast.makeText(getContext(), "Starting level " + String.valueOf(currentRoundLevel), Toast.LENGTH_SHORT).show();
 
                         }
                         return true;

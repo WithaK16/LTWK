@@ -11,6 +11,8 @@ public class Tower {
     private static final String LOG_TAG = Tower.class.getSimpleName();
 
     private GameSurface gameSurface;
+    private int WIDTH_OBJECT;
+    private int HEIGHT_OBJECT;
 
     private int x;
     private int y;
@@ -32,19 +34,37 @@ public class Tower {
         this.towerType = towerType;
         this.x = x;
         this.y = y;
-        // TODO right now range is constant and within a circle around tower
-        // Add in constructor for variable range
-        this.rangeAttack = Math.hypot(gameSurface.getWIDTH_OBJECT(), gameSurface.getHEIGHT_OBJECT());
-        //TODO Same, add constructor for ammunition, right now it's hardcode as 1 ammu per update
-        this.ammunition = 1;
-        //TODO Same
-        this.damageAttack = 2;
+        this.WIDTH_OBJECT = gameSurface.getWIDTH_OBJECT();
+        this.HEIGHT_OBJECT = gameSurface.getHEIGHT_OBJECT();
     }
 
     // TODO add upgrading charachteristic in this function
     public void setTowerType (int towerType) {
-
         this.towerType = towerType;
+        // Setting tower characteristics
+        double baseRange = Math.hypot(WIDTH_OBJECT, HEIGHT_OBJECT);
+        switch (towerType) {
+            case(1):
+                rangeAttack = baseRange;
+                ammunition = 1;
+                damageAttack = 2;
+                break;
+            case(2):
+                rangeAttack = 2 * baseRange;
+                ammunition = 1;
+                damageAttack = 4;
+                break;
+            case(3):
+                rangeAttack = 3 * baseRange;
+                ammunition = 2;
+                damageAttack = 8;
+                break;
+            default:
+                rangeAttack = baseRange;
+                ammunition = 1;
+                damageAttack = 2;
+                break;
+        }
     }
 
     public int getTowerType() {
