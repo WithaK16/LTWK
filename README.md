@@ -6,7 +6,7 @@ Here are some screenshots of current progress:
 ![alt tag](https://cloud.githubusercontent.com/assets/17689495/19559867/670962c2-9704-11e6-9065-0e9c9627557e.png)
 ![alt tag](https://cloud.githubusercontent.com/assets/17689495/19559871/670cc5de-9704-11e6-8833-72f28146def8.png)
 ![alt tag](https://cloud.githubusercontent.com/assets/17689495/19559869/670a7b8a-9704-11e6-8ca5-c40db8ef2335.png)
-![alt tag](https://cloud.githubusercontent.com/assets/17689495/19559870/670b312e-9704-11e6-936f-a5ac99115ec1.png)
+![alt tag](https://cloud.githubusercontent.com/assets/17689495/19560377/d9d9f68e-9706-11e6-8ea6-774aeb2d6bc1.png)
 
 
 Credit :
