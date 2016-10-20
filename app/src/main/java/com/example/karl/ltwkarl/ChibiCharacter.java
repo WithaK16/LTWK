@@ -29,7 +29,6 @@ public class ChibiCharacter extends GameObject implements Mover {
 
     private int colUsing;
 
-    protected Bitmap image;
 
     private Bitmap[] leftToRights;
     private Bitmap[] rightToLefts;

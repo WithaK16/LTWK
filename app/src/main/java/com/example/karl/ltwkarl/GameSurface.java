@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -106,11 +107,64 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         };
 
+        this.gameThread = new GameThread(this, getHolder());
+        //Create a player and round
+        this.currentPlayer = new PlayerManager(this);
+        currentRoundLevel = 0;
+        this.currentRound = new RoundManager(this, currentRoundLevel);
+
+        // Setting this important variable at the init of the surface (will be used by other method)
+        // TODO Find a way to make it possible to use by other phone and not hardcode
+        WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
+        HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
+
+        //Create buttons
+        buildButton[1] = BitmapFactory.decodeResource(this.getResources(), build_your_tower); // Button unlock
+        buildButton[0] = BitmapFactory.decodeResource(this.getResources(), build_your_tower_locked); // Button lock
+
+        //Create possible/impossible img
+        possibleConstruction[1] = BitmapFactory.decodeResource(this.getResources(), impossible_transparent); // Button unlock
+        possibleConstruction[0] = BitmapFactory.decodeResource(this.getResources(), possible_transparent); // Button lock
+        this.needToCreatePossibleConstructionGrid = true;
+        // init figures_img and dollar_img sign
+        dollarSign = BitmapFactory.decodeResource(this.getResources(), dollar_img);
+        for(int i=0; i<10; i++){
+            figures[i] = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), figures_img),
+                    i*WIDTH_OBJECT, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
+        }
+        //init heart & dead zone icon
+        lifeLeft = BitmapFactory.decodeResource(getResources(), R.drawable.heart_img);
+        deadZone = BitmapFactory.decodeResource(getResources(), R.drawable.castle32_img);
+
+        // Create all the bitmap and scale them
+        explosionBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion);
+        chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
+        blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
+        blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
+        Bitmap attackTower1_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_1);
+        Bitmap attackTower2_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_2);
+        Bitmap attackTower3_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_3);
+
+        attackTower1 = new Bitmap[2][4];
+        attackTower2 = new Bitmap[2][4];
+        attackTower3 = new Bitmap[2][4];
+
+        // CREATE SPRITE FOR tower_attack_0
+        for (int row = 0; row < 2; row++) {
+            for (int column = 0; column < 4; column++) {
+                attackTower1[row][column] = Bitmap.createBitmap(attackTower1_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+                attackTower2[row][column] = Bitmap.createBitmap(attackTower2_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+                attackTower3[row][column] = Bitmap.createBitmap(attackTower3_tot,
+                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
+            }
+        }
+
+
     }
 
     public void update()  {
-
-
         // First update the current round
         currentRound.update();
 
@@ -194,72 +248,22 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        // Setting this important variable at the init of the surface (will be used by other method)
-        // TODO Find a way to make it possible to use by other phone and not hardcode
-        WIDTH_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
-        HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
-
-
-        //Create a player
-        this.currentPlayer = new PlayerManager(this);
-
-        //Create a scalable background
+        //Create a scalable background (need the surface to be created before it can be done)
         Bitmap background = BitmapFactory.decodeResource(getResources(), R.drawable.snow_template1);
         float scale = (float)background.getHeight()/(float)getHeight();
         int newWidth = Math.round(background.getWidth()/scale);
         int newHeight = Math.round(background.getHeight()/scale);
         scaledBackground = Bitmap.createScaledBitmap(background, newWidth, newHeight, true);
 
-        //Create buttons
-        buildButton[1] = BitmapFactory.decodeResource(this.getResources(), build_your_tower); // Button unlock
-        buildButton[0] = BitmapFactory.decodeResource(this.getResources(), build_your_tower_locked); // Button lock
-
-        //Create possible/impossible img
-        possibleConstruction[1] = BitmapFactory.decodeResource(this.getResources(), impossible_transparent); // Button unlock
-        possibleConstruction[0] = BitmapFactory.decodeResource(this.getResources(), possible_transparent); // Button lock
-        this.needToCreatePossibleConstructionGrid = true;
-        // init figures_img and dollar_img sign
-        dollarSign = BitmapFactory.decodeResource(this.getResources(), dollar_img);
-        for(int i=0; i<10; i++){
-            figures[i] = Bitmap.createBitmap(BitmapFactory.decodeResource(this.getResources(), figures_img),
-                    i*WIDTH_OBJECT, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
-        }
-        //init heart & dead zone icon
-        lifeLeft = BitmapFactory.decodeResource(getResources(), R.drawable.heart_img);
-        deadZone = BitmapFactory.decodeResource(getResources(), R.drawable.castle32_img);
-
-        // Create all the bitmap and scale them
-        explosionBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion);
-        chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
-        blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
-        blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
-        Bitmap attackTower1_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_1);
-        Bitmap attackTower2_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_2);
-        Bitmap attackTower3_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_3);
-
-        attackTower1 = new Bitmap[2][4];
-        attackTower2 = new Bitmap[2][4];
-        attackTower3 = new Bitmap[2][4];
-
-        // CREATE SPRITE FOR tower_attack_0
-        for (int row = 0; row < 2; row++) {
-            for (int column = 0; column < 4; column++) {
-                attackTower1[row][column] = Bitmap.createBitmap(attackTower1_tot,
-                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
-                attackTower2[row][column] = Bitmap.createBitmap(attackTower2_tot,
-                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
-                attackTower3[row][column] = Bitmap.createBitmap(attackTower3_tot,
-                        column * WIDTH_OBJECT, row* HEIGHT_OBJECT , WIDTH_OBJECT, HEIGHT_OBJECT);
-            }
-        }
-        currentRoundLevel = 0;
-        this.currentRound = new RoundManager(this, currentRoundLevel);
         xGridArrival = (getWidth() / WIDTH_OBJECT) - 1;
         yGridArrival = getHeight() / (HEIGHT_OBJECT*2);
 
-        this.gameThread = new GameThread(this, holder);
-        this.gameThread.setRunning(true);
-        this.gameThread.start();
+
+        gameThread.setRunning(true);
+        if (gameThread.getState() == Thread.State.NEW)
+        {
+            gameThread.start();
+        }
     }
 
     // Implements method of SurfaceHolder.Callback
@@ -271,17 +275,22 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     // Implements method of SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        boolean retry= true;
-        while(retry) {
+
+        Log.v(LOG_TAG, "SURFACE IS BEING DESTROYED");
+        boolean retry = true;
+        gameThread.setRunning(false);
+        gameThread.setState(GameThread.STATE_PAUSE);
+        while (retry) {
             try {
-                this.gameThread.setRunning(false);
-                // Parent thread must wait until the end of GameThread.
-                this.gameThread.join();
-            }catch(InterruptedException e)  {
+                gameThread.join();
+                retry = false;
+                Log.v(LOG_TAG, "thread is dead");
+            } catch (InterruptedException e) {
+                Log.v(LOG_TAG, "thread not closed yet");
                 e.printStackTrace();
             }
-            retry= true;
         }
+
     }
 
     //TODO Divide this function in smaller part (case round finish case round not finish)
@@ -408,6 +417,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     public PlayerManager getCurrentPlayer() {
         return currentPlayer;
     }
+
+    public RoundManager getCurrentRound() { return currentRound; }
+
+    public int getCurrentRoundLevel() {return currentRoundLevel;}
+
+    public void setCurrentRoundLevel(int newRoudLevel) {this.currentRoundLevel = newRoudLevel;}
+
+
+    public GameThread getGameThread() {return gameThread;}
 
 
 

@@ -69,5 +69,14 @@ public class RoundManager {
         }
     }
 
+    public void setRoundFinish(int isRoundFinishInt) {
+        if (isRoundFinishInt == 1) {
+            this.isRoundFinish = true;
+        }
+        else if (isRoundFinishInt == 0) {
+            this.isRoundFinish = false;
+        }
+    }
+
 
 }
