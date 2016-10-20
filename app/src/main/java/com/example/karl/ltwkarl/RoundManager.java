@@ -13,7 +13,7 @@ public class RoundManager {
     private GameSurface gameSurface;
     private boolean isRoundFinish;
     private ArrayList<ChibiCharacter> listChibis;
-    private int numberOfChibisLeft;
+    private double numberOfChibisLeft;
     private long totalDurationMs;
     // Inverse of frequency of apparation
     private double periodRespawn;
@@ -27,7 +27,7 @@ public class RoundManager {
         this.isRoundFinish = false;
         this.gameSurface = gameSurface;
         // A round currently consist of 2 times round level of chibis
-        this.numberOfChibisLeft = roundLevel * 2;
+        this.numberOfChibisLeft = Math.pow(1.3, roundLevel);
         this.listChibis = gameSurface.getListChibis();
         this.totalDurationMs = 0;
         this.updateTime = System.currentTimeMillis();
