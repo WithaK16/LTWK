@@ -11,7 +11,7 @@ Here are some screenshots of current progress:
 
 Credit :
 http://www.kenney.nl/ for their awesome 2D art tile (http://opengameart.org/content/tower-defense-300-tilessprites)
-Kevin Glass for his more than useful tutorial and code on Astar algorithm in Java http://www.cokeandcode.com/main/tutorials/path-finding/
+Kevin Glass for his tutorial and code on Astar algorithm in Java http://www.cokeandcode.com/main/tutorials/path-finding/
 http://o7planning.org/en/10521/android-2d-game-tutorial-for-beginners this tutorial really help me understanding how Surface View works on Android and how you could use them for a 2D game.
 
 As soon as the project is over, I'll credited every people who have his own piece of software / art into my project.
