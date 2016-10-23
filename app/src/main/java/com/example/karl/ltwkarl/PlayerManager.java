@@ -33,10 +33,12 @@ public class PlayerManager {
     public int getGoldPlayer() {
         return goldPlayer;
     }
+
     public void addGoldPlayer(ArrayList<ChibiCharacter> chibiToKill) {
-        //TODO Update gold as a function of the chibi level
-        if (this.goldPlayer <= 99) {
-            this.goldPlayer = Math.min(chibiToKill.size()+this.goldPlayer, 99);
+        for (ChibiCharacter chibi : chibiToKill) {
+            if (this.goldPlayer <= 99) {
+                this.goldPlayer = Math.min(this.goldPlayer + chibi.getGold(), 99);
+            }
         }
     }
 

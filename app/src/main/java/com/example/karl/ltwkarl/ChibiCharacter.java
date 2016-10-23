@@ -19,10 +19,10 @@ public class ChibiCharacter extends GameObject implements Mover {
     /** The unit ID moving */
     private int unitType;
 
-    private static final int ROW_TOP_TO_BOTTOM = 0;
+    private static final int ROW_TOP_TO_BOTTOM = 2;
     private static final int ROW_RIGHT_TO_LEFT = 1;
-    private static final int ROW_LEFT_TO_RIGHT = 2;
-    private static final int ROW_BOTTOM_TO_TOP = 3;
+    private static final int ROW_LEFT_TO_RIGHT = 3;
+    private static final int ROW_BOTTOM_TO_TOP = 0;
 
     // Row index of Image are being used.
     private int rowUsing = ROW_LEFT_TO_RIGHT;
@@ -58,7 +58,7 @@ public class ChibiCharacter extends GameObject implements Mover {
 
 
     public ChibiCharacter(GameSurface gameSurface, Bitmap image, int unitType,  int x, int y) {
-        super(image, 4, 3, x, y);
+        super(image, 4, 9, x, y);
 
         this.unitType = unitType;
 
@@ -66,8 +66,21 @@ public class ChibiCharacter extends GameObject implements Mover {
 
         this.xGrid = getXGrid(x);
         this.yGrid = getYGrid(y);
-
-        this.healthPoint = 1000; //TODO Stop hardcoding that, put in constructor for variable HP
+//TODO Stop hardcoding that, put in constructor for variable HP
+        switch (unitType) {
+            case 0:
+                this.healthPoint = 1000;
+                break;
+            case 1:
+                this.healthPoint = 3000;
+                break;
+            case 3:
+                this.healthPoint = 10000;
+                break;
+            default:
+                this.healthPoint = 1000;
+                break;
+        }
 
 
         listPossiblePath = gameSurface.getListPossiblePath();
@@ -233,6 +246,26 @@ public class ChibiCharacter extends GameObject implements Mover {
     public void setMovingVector(int movingVectorX, int movingVectorY)  {
         this.movingVectorX = movingVectorX;
         this.movingVectorY = movingVectorY;
+    }
+    /*
+    Get the numberof gold in function of chibi level (currently 1, 3, 10)
+     */
+    public int getGold() {
+        int gold;
+        switch (this.unitType) {
+            case(0):
+                gold = 1;
+                break;
+            case(1):
+                gold = 3;
+                break;
+            case(2):
+                gold = 10;
+                break;
+            default:
+                gold = 1;
+        }
+        return gold;
     }
 
     public int getXGrid(int x) {

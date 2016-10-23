@@ -158,17 +158,17 @@ public Bundle saveState() {
         ArrayList<Integer> typeTower = savedState.getIntegerArrayList(KEY_TYPE_TOWER);
         ArrayList<Integer> xChibi = savedState.getIntegerArrayList(KEY_X_CHIBI);
         ArrayList<Integer> yChibi = savedState.getIntegerArrayList(KEY_Y_CHIBI);
-        //TODO chibi type
-        //ArrayList<Integer> xTower = savedState.getIntegerArrayList(KEY_X_TOWER);
+//        TODO chibi type and being able to restore the game if pause during a round
+//        for (int i=0; i < xChibi.size(); i++) {
+//            listChibis.add(new ChibiCharacter(mGameSurface, mGameSurface.chibiCharacter, 0, xChibi.get(i), yChibi.get(i)));
+//        }
         ArrayList<Tower> listTower = mGameSurface.getListTowers();
         ArrayList<ChibiCharacter> listChibis = mGameSurface.getListChibis();
         for (int i=0; i < xTower.size(); i++) {
             listTower.add(new Tower(mGameSurface, 0, xTower.get(i), yTower.get(i)));
             listTower.get(i).setTowerType(typeTower.get(i));
         }
-        for (int i=0; i < xChibi.size(); i++) {
-            listChibis.add(new ChibiCharacter(mGameSurface, mGameSurface.chibiCharacter, 0, xChibi.get(i), yChibi.get(i)));
-        }
+
         mGameSurface.getCurrentPlayer().setGoldPlayer(savedState.getInt(KEY_GOLD_PLAYER));
         mGameSurface.getCurrentPlayer().setLifeLeft(savedState.getInt(KEY_LIFE_PLAYER));
         mGameSurface.setCurrentRoundLevel(savedState.getInt(KEY_ROUND_LEVEL));

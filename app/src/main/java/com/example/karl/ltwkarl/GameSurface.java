@@ -23,13 +23,15 @@ import static com.example.karl.ltwkarl.R.drawable.block_tower;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_1;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_2;
 import static com.example.karl.ltwkarl.R.drawable.block_tower_attack_3;
-import static com.example.karl.ltwkarl.R.drawable.build_your_tower;
-import static com.example.karl.ltwkarl.R.drawable.build_your_tower_locked;
-import static com.example.karl.ltwkarl.R.drawable.chibi1;
 import static com.example.karl.ltwkarl.R.drawable.dollar_img;
+import static com.example.karl.ltwkarl.R.drawable.elf32;
 import static com.example.karl.ltwkarl.R.drawable.figures_img;
 import static com.example.karl.ltwkarl.R.drawable.impossible_transparent;
+import static com.example.karl.ltwkarl.R.drawable.orc32;
 import static com.example.karl.ltwkarl.R.drawable.possible_transparent;
+import static com.example.karl.ltwkarl.R.drawable.skeleton32;
+import static com.example.karl.ltwkarl.R.drawable.start_lock_resize;
+import static com.example.karl.ltwkarl.R.drawable.start_resize;
 
 public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -39,6 +41,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<ChibiCharacter> listChibis = new ArrayList<ChibiCharacter>();
     private ArrayList<Explosion> listExplosions = new ArrayList<Explosion>();
     private ArrayList<Tower> listTowers = new ArrayList<Tower>();
+    private ArrayList<BulletShot> listBullet = new ArrayList<BulletShot>();
     private RoundManager currentRound;
     private int currentRoundLevel;
     private PlayerManager currentPlayer;
@@ -62,8 +65,11 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     //Variable containing every bitmap used during the game
     private Bitmap scaledBackground;
-    public Bitmap chibiCharacter;
+    public Bitmap chibiCharacterSkeleton;
+    public Bitmap chibiCharacterElf;
+    public Bitmap chibiCharacterOrc;
     public Bitmap explosionBitmap;
+    public Bitmap bulletShot;
     public Bitmap blockTower;
     public Bitmap[][] attackTower1;
     public Bitmap[][] attackTower2;
@@ -119,8 +125,8 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
         HEIGHT_OBJECT = 96; // WARNING THE GAME IS DESIGN AROUND THE VALUE OF THIS 32 PX
 
         //Create buttons
-        buildButton[1] = BitmapFactory.decodeResource(this.getResources(), build_your_tower); // Button unlock
-        buildButton[0] = BitmapFactory.decodeResource(this.getResources(), build_your_tower_locked); // Button lock
+        buildButton[1] = BitmapFactory.decodeResource(this.getResources(), start_resize); // Button unlock
+        buildButton[0] = BitmapFactory.decodeResource(this.getResources(), start_lock_resize); // Button lock
 
         //Create possible/impossible img
         possibleConstruction[1] = BitmapFactory.decodeResource(this.getResources(), impossible_transparent); // Button unlock
@@ -138,7 +144,10 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         // Create all the bitmap and scale them
         explosionBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.explosion);
-        chibiCharacter = BitmapFactory.decodeResource(this.getResources(), chibi1);
+        bulletShot = BitmapFactory.decodeResource(this.getResources(), R.drawable.shot32);
+        chibiCharacterSkeleton = BitmapFactory.decodeResource(this.getResources(), skeleton32);
+        chibiCharacterElf = BitmapFactory.decodeResource(this.getResources(), elf32);
+        chibiCharacterOrc = BitmapFactory.decodeResource(this.getResources(), orc32);
         blockTower = BitmapFactory.decodeResource(this.getResources(), block_tower);
         blockTower = Bitmap.createBitmap(blockTower, 0, 0, WIDTH_OBJECT, HEIGHT_OBJECT);
         Bitmap attackTower1_tot = BitmapFactory.decodeResource(this.getResources(), block_tower_attack_1);
@@ -182,6 +191,16 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
             tower.update();
         }
 
+        ArrayList<BulletShot> bulletShotToKill = new ArrayList<BulletShot>();
+        //update the bullet
+        for (BulletShot bulletShot : listBullet) {
+            bulletShot.update();
+            if (bulletShot.getMovingVectorLength() <= WIDTH_OBJECT){
+                bulletShotToKill.add(bulletShot);
+            }
+        }
+        listBullet.removeAll(bulletShotToKill);
+
         //update Chibis
         //TODO maybe add that into RoundManager?
         ArrayList<ChibiCharacter> chibiToKill = new ArrayList<ChibiCharacter>();
@@ -215,7 +234,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
         //Draw Buttons
-        canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], xButtonBuild, yButtonBuild + 5, null);
+        canvas.drawBitmap(buildButton[currentRound.isRoundFinished()], xButtonBuild, yButtonBuild + 10, null);
         //Draw current gold (power of ten + rest) and life
         //x=1200, y = 50 is arbitrary value
         int goldPlayer = Math.max(currentPlayer.getGoldPlayer(), 0); // this to manage display for the chibi trick when dead
@@ -229,11 +248,15 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
         if (currentRound.isRoundFinished() == 1) {
+            listBullet.clear();
             possibleConstructionGrid.draw(canvas);
         }
 
         for (Tower tower : listTowers) {
             tower.draw(canvas);
+        }
+        for (BulletShot bulletShot : listBullet) {
+            bulletShot.draw(canvas);
         }
         for (ChibiCharacter chibi : listChibis) {
             chibi.draw(canvas);
@@ -339,12 +362,16 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
                         int gridX = initialTouchX / WIDTH_OBJECT;
                         int gridY = initialTouchY / HEIGHT_OBJECT;
                         if (possibleConstructionGrid.getPossibleGrid()[gridX][gridY] != 0) {
+                            //TODO stop hardcoding message, should be in string file easier to translate
                             Toast.makeText(getContext(), "Impossible to build here", Toast.LENGTH_SHORT).show();
                         }
                         else {
                             listTowers.add(new Tower(this, 0, gridX * WIDTH_OBJECT, gridY * HEIGHT_OBJECT));
                             currentPlayer.setGoldPlayer(currentPlayer.getGoldPlayer() - 1); // TODO stop hardcoding
                         }
+                    } else if (currentPlayer.getGoldPlayer() == 0) {
+                        //TODO stop hardcoding message, should be in string file easier to translate
+                        Toast.makeText(getContext(), "Not enough gold to build a block", Toast.LENGTH_SHORT).show();
                     }
                     break;
             }
@@ -424,6 +451,7 @@ public class GameSurface extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setCurrentRoundLevel(int newRoudLevel) {this.currentRoundLevel = newRoudLevel;}
 
+    public ArrayList<BulletShot> getListBullet() {return this.listBullet;}
 
     public GameThread getGameThread() {return gameThread;}
 
