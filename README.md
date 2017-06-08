@@ -1,5 +1,5 @@
 # LTWK
-A first step into Android development, trying to create a Tower Defense game using my own "Gaming engine" (if you can call it like that)
+A first step into Android development, trying to create a Tower Defence game using my own "Gaming engine" (if you can call it like that)
 Using Android Surface View and many sprites found on internet.
 
 Here are some screenshots of current progress:
